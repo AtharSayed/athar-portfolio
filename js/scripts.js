@@ -2,8 +2,26 @@
  * Mobile menu fixes, performance improvements, and cross-browser support
  */
 
-
 document.addEventListener('DOMContentLoaded', function() {
+
+    // =============================================
+    // RESUME TEXT LOADER (FOR AI CONTEXT)
+    // =============================================
+    let cachedResumeText = '';
+
+    async function loadResumeText() {
+        try {
+            const res = await fetch('/api/resume');
+            const data = await res.json();
+            cachedResumeText = data?.resume || '';
+            console.log("✅ Resume loaded for AI. Length:", cachedResumeText.length);
+        } catch (e) {
+            console.warn('⚠️ Resume not loaded:', e);
+        }
+    }
+
+    // Load resume once when page loads
+    loadResumeText();
     // =============================================
     // 1. ENHANCED MOBILE MENU WITH TOUCH SUPPORT
     // =============================================
@@ -256,19 +274,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 pendingRequest: null
             };
 
-            // Gather short profile context from visible page content to ground replies
+            // Gather rich profile context from all visible page sections
             function gatherProfileContext() {
                 try {
-                    const about = document.querySelector('#about .about-text')?.innerText || '';
-                    const projects = Array.from(document.querySelectorAll('#projects .project-card h3'))
-                        .map(h => h.innerText).join(' · ');
-                    const skills = Array.from(document.querySelectorAll('#skills .skill-category h3'))
-                        .map(h => h.innerText).join(' · ');
-                    const experience = Array.from(document.querySelectorAll('#experience .timeline-item h3'))
-                        .map(h => h.innerText).join(' · ');
-                    return `Profile context:\nAbout: ${about}\nProjects: ${projects}\nSkills: ${skills}\nExperience: ${experience}`;
+                    // About section
+                    const aboutElem = document.querySelector('#about');
+                    const about = aboutElem ? aboutElem.innerText : '';
+
+                    // Projects section (full text)
+                    const projectsElem = document.querySelector('#projects');
+                    const projects = projectsElem ? projectsElem.innerText : '';
+
+                    // Skills section (full text)
+                    const skillsElem = document.querySelector('#skills');
+                    const skills = skillsElem ? skillsElem.innerText : '';
+
+                    // Experience section (full text)
+                    const experienceElem = document.querySelector('#experience');
+                    const experience = experienceElem ? experienceElem.innerText : '';
+
+                    // Education section (full text)
+                    const educationElem = document.querySelector('#education');
+                    const education = educationElem ? educationElem.innerText : '';
+
+                    // Achievements/Certifications section (full text)
+                    const certificationsElem = document.querySelector('#achievements') || document.querySelector('[id*="certif"]');
+                    const certifications = certificationsElem ? certificationsElem.innerText : '';
+
+                    // Combine all into comprehensive context
+                    const context = [
+                        '=== ATHAR SAYED - PROFESSIONAL PROFILE ===',
+                        '',
+                        about,
+                        '',
+                        '=== PROJECTS ===',
+                        projects,
+                        '',
+                        '=== SKILLS & EXPERTISE ===',
+                        skills,
+                        '',
+                        '=== PROFESSIONAL EXPERIENCE ===',
+                        experience,
+                        '',
+                        '=== EDUCATION ===',
+                        education,
+                        '',
+                        '=== CERTIFICATIONS & ACHIEVEMENTS ===',
+                        certifications
+                    ].filter(s => s.trim()).join('\n');
+
+                    return context || 'No profile information found on page.';
                 } catch (e) {
-                    return '';
+                    console.error('Context gathering error:', e);
+                    return 'Error gathering profile context.';
                 }
             }
 
@@ -317,20 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (API_BASE) return API_BASE + path;
                 return path; // same-origin (useful when deployed to Vercel)
             }
-            /**
-             * Robustly extract readable text from API response objects.
-             * Returns a short string or null if nothing found.
-             */
-           /**
- * Robustly extract readable text from API response objects or JSON strings.
- * - If payload is a JSON string, try to parse it and extract text from parsed object.
- * - Handles shapes like:
- *    { reply: "..." }                 (reply can be plain text or a JSON string)
- *    { text: "..." }
- *    { content: { parts: [{ text: "..." }] } }   (Gemini-like)
- *    { choices: [{ message: { content: { parts: [...] } } }] } (OpenAI-like)
- * - Returns null if no useful readable text found.
- */
+
             function extractModelText(payload) {
             // small helper to detect JSON-string
             function looksLikeJsonString(s) {
@@ -378,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return payload.text.trim();
             }
 
-            // Common Gemini-like shape: payload.content.parts[*].text
+            // Common shape: payload.content.parts[*].text
             try {
                 if (payload.content && Array.isArray(payload.content.parts) && payload.content.parts.length) {
                 const txt = payload.content.parts.map(p => (typeof p === 'string' ? p : (p?.text || p?.content || ''))).join('\n\n').trim();
@@ -445,94 +490,26 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
             }
 
-            // Send message to backend proxy (/api/gemini)
-            async function askGemini(userMessage) {
-                convo.history.push({ role: 'user', content: userMessage });
+            async function askMistral(userMessage) {
+            convo.history.push({ role: 'user', content: userMessage });
 
-                const trimmedHistory = convo.history.slice(-8);
-                const profileContext = gatherProfileContext();
+            const payload = {
+                prompt: userMessage,
+                context: gatherProfileContext(),
+                history: convo.history
+            };
 
-                const payload = {
-                    model: 'gemini-2.5',
-                    prompt: userMessage,
-                    context: profileContext,
-                    history: trimmedHistory
-                };
+            const res = await fetch(apiEndpoint('/api/chat'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-                const respPlaceholder = appendLine('> Thinking...', 'assistant');
-                respPlaceholder.classList.add('typing');
+            const data = await res.json();
+            const reply = data?.reply || 'No response';
 
-                if (convo.pendingRequest && convo.pendingRequest.controller) {
-                    convo.pendingRequest.controller.abort();
-                }
-                const controller = new AbortController();
-                convo.pendingRequest = { controller };
-
-                try {
-                    const res = await fetch(apiEndpoint('/api/gemini'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                        signal: controller.signal
-                    });
-
-                    if (!res.ok) {
-                        const txt = await res.text();
-                        respPlaceholder.remove();
-                        appendLine(`> Error from server: ${res.status} ${sanitize(txt)}`, 'error');
-                        return;
-                    }
-
-                    const contentType = res.headers.get('content-type') || '';
-                    if (contentType.includes('text/event-stream') || contentType.includes('stream')) {
-                        const reader = res.body.getReader();
-                        const decoder = new TextDecoder();
-                        respPlaceholder.innerHTML = '';
-                        respPlaceholder.classList.remove('typing');
-
-                        while (true) {
-                            const { value, done } = await reader.read();
-                            if (done) break;
-                            const chunk = decoder.decode(value, { stream: true });
-                            respPlaceholder.innerHTML += sanitize(chunk);
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        }
-                        } else {
-                            // parse JSON safely and extract readable text only
-                            let data;
-                            try {
-                                data = await res.json();
-                            } catch (e) {
-                                // not JSON — show raw text
-                                const txt = await res.text().catch(() => '');
-                                respPlaceholder.innerHTML = sanitize(txt || 'No readable response from server.');
-                                convo.history.push({ role: 'assistant', content: respPlaceholder.innerText || respPlaceholder.textContent });
-                                return;
-                            }
-
-                            // Try to extract a human-readable string
-                            const extracted = extractModelText(data);
-                            if (extracted) {
-                                respPlaceholder.innerHTML = sanitize(extracted);
-                            } else {
-                                // fallback: keep output short and helpful for debugging
-                                const small = JSON.stringify(data).slice(0, 800); // keep it small
-                                respPlaceholder.innerHTML = sanitize(small + (small.length >= 800 ? '... (truncated)' : ''));
-                            }
-                        }
-
-
-                    convo.history.push({ role: 'assistant', content: respPlaceholder.innerText || respPlaceholder.textContent });
-                } catch (err) {
-                    if (err.name === 'AbortError') {
-                        appendLine('> Request aborted.', 'system');
-                    } else {
-                        appendLine(`> Network or server error: ${sanitize(err.message)}`, 'error');
-                    }
-                } finally {
-                    convo.pendingRequest = null;
-                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                }
+            convo.history.push({ role: 'assistant', content: reply });
+            appendLine(sanitize(reply), 'assistant');
             }
 
             // Local commands fallback
@@ -584,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         return;
                     }
 
-                    askGemini(input);
+                    askMistral(input);
                 }
             });
 

@@ -1,255 +1,190 @@
-// Enhanced Express proxy for Google Generative Language / Gemini endpoints
-// Keep your API key server-side. This proxy uses the header `X-goog-api-key` by default
-// to match the curl example provided. Adapt `buildRequestBody` if your provider expects
-// a different JSON schema.
+import dotenv from 'dotenv';
+dotenv.config();
 
-require('dotenv').config();
-const express = require('express');
-const fetch = require('node-fetch');
-const cors = require('cors');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
-// In development allow all origins; restrict in production
 app.use(cors());
 
 const PORT = process.env.PORT || 5173;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY; // your API key
-const GEMINI_API_URL = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-// By default we use the X-goog-api-key header as in the user's curl example.
-const USE_X_GOOG_HEADER = process.env.GEMINI_API_KEY_HEADER !== 'AUTHORIZATION';
+const HF_API_KEY = process.env.HF_API_KEY;
 
-if (!GEMINI_API_KEY) {
-  console.warn('Warning: GEMINI_API_KEY not set. Proxy will not work until configured.');
+// Official OpenAI-compatible router endpoint
+const HF_CHAT_ENDPOINT = 'https://router.huggingface.co/v1/chat/completions';
+
+// Minimal fallback JSON
+const FALLBACK_RESUME_JSON = {
+  name: "Athar Sayed",
+  summary: "AI/ML Engineer pursuing M.Tech in AI at NMIMS. Expertise in Python, C++, TensorFlow, real-time systems, and production deployment.",
+  education: [],
+  experience: [],
+  projects: [],
+  skills: [],
+  certifications: [],
+  publications: [],
+  achievements: []
+};
+
+if (!HF_API_KEY) {
+  console.warn('⚠️ Warning: HF_API_KEY not set. Set it in .env or environment.');
 }
 
-// Build request body for Google Generative Language `generateContent` endpoint
-function buildRequestBody({ model, prompt, context, history }) {
-  // Combine context and history into a single user prompt. Keep concise to avoid large payloads.
-  const historyText = (history || []).map(h => `${h.role}: ${h.content}`).join('\n');
-  // Instruction to make responses concise, resume-grounded, and plain-text only
-  const systemInstruction = `You are an assistant that answers questions about the user's resume and portfolio. Use ONLY the provided profile context and conversation history to answer. Provide concise, relevant answers: maximum 3 short sentences or up to 3 bullet points. If the answer is not present in the context, reply with "I don't know." Return plain text only — do not wrap the answer in JSON or other markup.`;
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
-  const fullText = [
-    `System Instruction:\n${systemInstruction}`,
-    `Profile Context:\n${context || ''}`,
-    `Conversation history:\n${historyText}`,
-    `User Question:\n${prompt || ''}`
-  ].filter(Boolean).join('\n\n');
-
-  return {
-    contents: [
-      {
-        parts: [
-          {
-            text: fullText
-          }
-        ]
-      }
-    ]
-    // You can add `temperature`, `maxOutputTokens`, etc. depending on the API
-  };
-}
-
-// Robust extractor to find readable text in a provider response
-function extractTextFromResponse(data) {
-  if (!data) return '';
-
-  // Helper: collect all leaf strings in an object/array (avoid keys)
-  function collectStrings(obj, out = []) {
-    if (obj === null || obj === undefined) return out;
-    if (typeof obj === 'string') {
-      const s = obj.trim();
-      if (s) out.push(s);
-      return out;
-    }
-    if (typeof obj === 'number' || typeof obj === 'boolean') {
-      out.push(String(obj));
-      return out;
-    }
-    if (Array.isArray(obj)) {
-      for (const v of obj) collectStrings(v, out);
-      return out;
-    }
-    if (typeof obj === 'object') {
-      for (const k of Object.keys(obj)) collectStrings(obj[k], out);
-      return out;
-    }
-    return out;
-  }
+// Resume endpoint: PDF primary, HTML supplement, fallback last
+app.get('/api/resume', async (req, res) => {
+  let resumeJson = { ...FALLBACK_RESUME_JSON };
+  let sources = [];
 
   try {
-    // 1) Google GL / Gemini-style: candidates -> content | output
-    if (Array.isArray(data.candidates) && data.candidates.length) {
-      const texts = data.candidates.map(cand => {
-        // cand.content may be array of parts { text }
-        if (cand.content) {
-          if (Array.isArray(cand.content)) {
-            return cand.content
-              .map(p => p?.text ?? (typeof p === 'string' ? p : ''))
-              .filter(Boolean)
-              .join('\n');
-          } else if (typeof cand.content === 'string') {
-            return cand.content;
-          } else if (cand.content.parts && Array.isArray(cand.content.parts)) {
-            return cand.content.parts
-              .map(p => p?.text || '')
-              .filter(Boolean)
-              .join('\n');
-          }
-        }
-        if (cand.output) {
-          if (cand.output.content && Array.isArray(cand.output.content)) {
-            return cand.output.content
-              .map(p => p?.text || '')
-              .filter(Boolean)
-              .join('\n');
-          }
-          if (typeof cand.output === 'string') return cand.output;
-        }
-        if (typeof cand === 'string') return cand;
-
-        const leafs = collectStrings(cand);
-        return leafs.join('\n');
-      }).filter(Boolean);
-
-      if (texts.length) return texts.join('\n\n');
-    }
-
-    // 2) Old-style output array: output[].content[].text
-    if (Array.isArray(data.output) && data.output.length) {
-      const out = data.output.map(o => {
-        if (o.content && Array.isArray(o.content)) {
-          return o.content
-            .map(c => c?.text ?? (typeof c === 'string' ? c : ''))
-            .filter(Boolean)
-            .join('\n');
-        }
-        return '';
-      }).filter(Boolean);
-      if (out.length) return out.join('\n\n');
-    }
-
-    // 3) Gemini-like: data.content.parts[*].text
-    if (data.content && Array.isArray(data.content.parts)) {
-      const txt = data.content.parts
-        .map(p => p?.text ?? '')
-        .filter(Boolean)
-        .join('\n');
-      if (txt) return txt;
-    }
-
-    // 4) OpenAI-like: choices[].message.content.parts or choices[].text
-    if (Array.isArray(data.choices) && data.choices.length) {
-      for (const c of data.choices) {
-        const parts = c?.message?.content?.parts || c?.message?.content;
-        if (Array.isArray(parts) && parts.length) {
-          const txt = parts
-            .map(p => (typeof p === 'string' ? p : (p?.text || '')))
-            .filter(Boolean)
-            .join('\n\n');
-          if (txt) return txt;
-        }
-        if (typeof c.text === 'string' && c.text.trim()) return c.text.trim();
-        if (typeof c?.message?.content === 'string' && c.message.content.trim()) {
-          return c.message.content.trim();
-        }
+    // 1. PDF parsing (primary source)
+    const pdfPath = path.join(__dirname, '..', 'Athar-Sayed-Resume.pdf');
+    if (fs.existsSync(pdfPath)) {
+      const dataBuffer = fs.readFileSync(pdfPath);
+      const pdfParse = await import('pdf-parse');
+      const parsed = await pdfParse.default(dataBuffer);
+      const rawText = String(parsed.text || '').replace(/\s+/g, ' ').trim();
+      if (rawText.length > 200) {
+        const pdfJson = parseResumeToJson(rawText);
+        resumeJson = {
+          ...resumeJson,
+          academic: pdfJson.academic || [],
+          projects: pdfJson.projects || [],
+          experience: pdfJson.experience || [],
+          certifications: pdfJson.certifications || [],
+          publications: pdfJson.publications || [],
+          skills: pdfJson.skills || [],
+          extraCurricular: pdfJson.extraCurricular || []
+        };
+        sources.push('PDF');
       }
     }
 
-    // 5) Simple fields
-    if (typeof data.reply === 'string' && data.reply.trim()) return data.reply.trim();
-    if (typeof data.text === 'string' && data.text.trim()) return data.text.trim();
-    if (typeof data.output?.text === 'string' && data.output.text.trim()) return data.output.text.trim();
-
-    // 6) FINAL fallback: leaf strings (not JSON.stringify)
-    const leaves = collectStrings(data);
-    if (leaves.length) {
-      return leaves.join('\n').trim();
+    // 2. HTML portfolio supplement
+    const htmlPath = path.join(__dirname, '..', 'index.html');
+    if (fs.existsSync(htmlPath)) {
+      const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+      const portfolio = parsePortfolioHtml(htmlContent);
+      resumeJson.summary = portfolio.summary || resumeJson.summary;
+      resumeJson.education = portfolio.education.length ? portfolio.education : resumeJson.academic.map(a => ({ degree: a, details: '' }));
+      resumeJson.projects = [...resumeJson.projects, ...portfolio.projects];
+      resumeJson.certifications = [...resumeJson.certifications, ...portfolio.certifications.map(c => c.title + ' - ' + c.issuer)];
+      resumeJson.achievements = [...(resumeJson.achievements || []), ...portfolio.achievements];
+      sources.push('Portfolio HTML');
     }
 
-    // Last resort
-    return typeof data === 'string' ? data : JSON.stringify(data);
-  } catch (e) {
-    return typeof data === 'string' ? data : JSON.stringify(data);
-  }
-}
-
-
-// Sanitize final reply but keep punctuation & line breaks
-function sanitizeFinalReply(rawText) {
-  if (!rawText) return "I don't know.";
-
-  let s = String(rawText);
-
-  // 1) Normalize line endings
-  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
-
-  // 2) Collapse multiple blank lines
-  s = s.replace(/\n{2,}/g, '\n\n');
-
-  // 3) Keep punctuation & newlines, drop control chars
-  s = s.replace(/[^\x20-\x7E\n]/g, ' ');
-
-  // 4) Collapse extra whitespace but keep sentence structure
-  s = s.replace(/[ \t]{2,}/g, ' ').replace(/\s{2,}/g, ' ').trim();
-
-  // 5) Remove leading greetings
-  s = s.replace(/^\s*(hi|hello|hey|greetings)[\.,!\s-]+/i, '');
-
-  // 6) Limit to first 3 sentences or ~450 chars
-  const sentences = s.match(/[^.!?]+[.!?]?/g) || [s];
-  const selected = sentences.slice(0, 3).join(' ').trim();
-  const result = selected.length
-    ? selected
-    : (s.length > 450 ? s.slice(0, 450).trim() + '...' : s);
-
-  return result || "I don't know.";
-}
-
-
-app.post('/api/gemini', async (req, res) => {
-  try {
-    const { model, prompt, context, history } = req.body || {};
-
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'Server not configured with GEMINI_API_KEY' });
-    }
-
-    // Intercept trivial greetings and respond with a concise, third-person hint
-    const normalizedPrompt = (prompt || '').toString().trim().toLowerCase();
-    if (/^(hi|hello|hey|hey there|hello there|good morning|good afternoon|good evening)[.!]?$/i.test(normalizedPrompt)) {
-      // Respond as a third-person assistant describing Athar
-      return res.json({ reply: "Hello — ask me about Athar's skills, recent projects, experience, or contact information." });
-    }
-
-    const downstreamBody = buildRequestBody({ model, prompt, context, history });
-
-    const headers = { 'Content-Type': 'application/json' };
-    if (USE_X_GOOG_HEADER) headers['X-goog-api-key'] = GEMINI_API_KEY;
-    else headers['Authorization'] = `Bearer ${GEMINI_API_KEY}`;
-
-    const r = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(downstreamBody)
+    // Ensure all arrays
+    ['education', 'experience', 'projects', 'skills', 'certifications', 'publications', 'achievements'].forEach(k => {
+      resumeJson[k] = Array.isArray(resumeJson[k]) ? resumeJson[k] : [];
     });
 
-    if (!r.ok) {
-      const text = await r.text();
-      return res.status(r.status).send(text);
+    console.log(`✅ Resume loaded from ${sources.join(' + ')} | Projects: ${resumeJson.projects.length} | Experience: ${resumeJson.experience.length}`);
+    return res.json(resumeJson);
+  } catch (err) {
+    console.error('Resume load error:', err);
+    return res.status(500).json({ error: 'Failed to load; using fallback', resume: resumeJson });
+  }
+});
+
+// Chat endpoint: Fixed typo here
+app.post('/api/chat', async (req, res) => {
+  if (!HF_API_KEY) return res.status(500).json({ error: 'HF_API_KEY missing' });
+
+  try {
+    const { prompt = '', context = '', history = [] } = req.body || {};
+    if (!prompt.trim()) return res.status(400).json({ error: 'Prompt required' });
+
+    // Context can now be a string (from frontend gatherProfileContext) or JSON object
+    let contextText = '';
+    if (typeof context === 'string') {
+      contextText = context; // Already formatted text from frontend
+    } else if (typeof context === 'object' && context !== null) {
+      // Fallback: if context is still an object, format it
+      contextText = `
+Name: ${context.name || 'Athar Sayed'}
+Summary: ${context.summary || 'N/A'}
+Education: ${(context.education || []).map(e => e.degree || e || 'N/A').join('\n') || 'N/A'}
+Experience: ${(context.experience || []).map(e => `${e.role || ''} @ ${e.company || ''} (${e.dates || ''}): ${(e.details || []).join('; ')}`).join('\n') || 'N/A'}
+Projects: ${(context.projects || []).map(p => `${p.name || ''}: ${(p.details || []).join('; ')}`).join('\n') || 'N/A'}
+Skills: ${(context.skills || []).join('; ') || 'N/A'}
+Certifications: ${(context.certifications || []).join('; ') || 'N/A'}
+      `.trim();
     }
 
-    const data = await r.json();
-    const raw = extractTextFromResponse(data);
-    const reply = sanitizeFinalReply(raw);
+    console.log('Chat request | Context length:', contextText.length, '| Prompt:', prompt.substring(0, 50));
+
+    // Strengthened system message emphasizing context-only answers
+    const systemMessage = {
+      role: 'system',
+      content: `You are a professional assistant for Athar Sayed's portfolio and resume. You MUST ONLY answer questions using the provided resume/profile context below. DO NOT use external knowledge or assumptions. Keep answers concise (2-3 sentences max) and factual. If the answer is not in the context, respond with "I don't know." Always reference specifics from the resume.`
+    };
+
+    const messages = [systemMessage];
+    (history || []).slice(-5).forEach(h => messages.push({ role: h.role === 'user' ? 'user' : 'assistant', content: h.content }));
+
+    // Build the full prompt with context and question
+    messages.push({
+      role: 'user',
+      content: `RESUME/PROFILE CONTEXT:\n${contextText}\n\n---\n\nQUESTION: ${prompt}\n\nANSWER (use only context above):`
+    });
+
+    const response = await fetch(HF_CHAT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${HF_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'meta-llama/Llama-3.1-8B-Instruct',
+        messages,
+        temperature: 0.1,
+        max_tokens: 400
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error('HF error:', err);
+      return res.status(502).json({ error: 'Model failed', details: err });
+    }
+
+    const data = await response.json();
+    let reply = data.choices?.[0]?.message?.content?.trim() || 'No reply';
+
+    // Safer sanitizer: remove code fences and excessive whitespace, but preserve punctuation,
+    // parentheses, acronyms, and other useful characters so the model's full answer remains intact.
+    function sanitizeReplyText(text) {
+      if (!text) return '';
+      let t = String(text);
+      // Remove fenced code blocks (```...```) entirely
+      t = t.replace(/```[\s\S]*?```/g, '');
+      // Remove inline code backticks but keep the content
+      t = t.replace(/`([^`]*)`/g, '$1');
+      // Normalize line endings
+      t = t.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      // Collapse more than two newlines to two
+      t = t.replace(/\n{3,}/g, '\n\n');
+      // Collapse multiple spaces/tabs into a single space
+      t = t.replace(/[ \t]{2,}/g, ' ');
+      // Trim
+      return t.trim();
+    }
+
+    reply = sanitizeReplyText(reply);
+    // If reply is empty after sanitization, fall back to a safe unknown response
+    if (!reply) reply = "I don't know.";
+
+    console.log('Reply preview:', reply.substring(0, 100));
     return res.json({ reply });
   } catch (err) {
-    console.error('Proxy error:', err);
+    console.error('Chat error:', err);
     return res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Proxy running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Robust Resume Chat Proxy running on http://localhost:${PORT}`));
