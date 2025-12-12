@@ -586,11 +586,11 @@ nav ul li a:hover {
   font-size: 0.9rem;
 }
 
-.terminal-controls {
+/* .terminal-controls {
   display: flex;
   gap: 0.6rem;
   margin-left: auto;
-}
+} */
 
 .control-btn {
   width: 14px;
@@ -607,31 +607,6 @@ nav ul li a:hover {
 .control-btn.minimize {
   background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
   box-shadow: 0 2px 6px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.control-btn.minimize:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.control-btn.maximize {
-  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
-  box-shadow: 0 2px 6px rgba(52, 211, 153, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.control-btn.maximize:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-}
-
-.control-btn.close {
-  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-.control-btn.close:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .terminal-body {
@@ -846,7 +821,7 @@ section h2:hover span::after {
 
 .about-img img {
   width: 100%;
-  max-width: 280px;
+  max-width: 300px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-medium);
   transition: all 0.5s ease;
