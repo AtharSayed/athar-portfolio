@@ -256,7 +256,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const terminalOutput = document.getElementById('terminal-output');
         const terminalInput = document.getElementById('terminal-input');
         const closeBtn = terminal.querySelector('.close');
-        if (!terminalToggle || !terminal || !terminalOutput || !terminalInput || !closeBtn) return;
+        // if (!terminalToggle || !terminal || !terminalOutput || !terminalInput || !closeBtn) return;
+        if (!terminalToggle || !terminal || !terminalOutput || !terminalInput) return;
+
 
         // Boot sequence messages
         function initAITerminal() {
