@@ -482,15 +482,15 @@
         </div>
     </section>
 
-    <button id="terminal-toggle" class="terminal-toggle" aria-label="Launch AI-OS Terminal">
-        <i class="fas fa-terminal"></i>
+    <button id="terminal-toggle" class="terminal-toggle" aria-label="Launch AI Chat">
+        <i class="fas fa-comments"></i>
         <span class="toggle-badge">AI</span>
     </button>
-    <div class="ai-terminal" id="ai-terminal" role="region" aria-label="AI-OS Terminal Interface">
-        <div class="terminal-header">
+    <div class="ai-terminal" id="ai-terminal" role="region" aria-label="AI Chat Interface">
+        <div class="terminal-header chat-header">
             <div class="terminal-title-section">
-                <!-- <span class="terminal-title">T.W.I.N.</span> -->
-                <span class="terminal-subtitle">Intelligent Responsive Interface System (IRIS)</span>
+                <span class="terminal-title">IRIS</span>
+                <span class="terminal-subtitle">Intelligent Responsive Interface System</span>
             </div>
             <div class="terminal-powered-by">
                 <span class="llama-badge">
@@ -499,10 +499,12 @@
                 </span>
             </div>
         </div>
-        <div class="terminal-body" id="terminal-output"></div>
-        <div class="terminal-input">
-            <span class="input-prompt">> </span>
-            <input type="text" id="terminal-input" placeholder="Ask me anything about Athar..." disabled aria-label="Terminal input">
+        <div class="chat-body" id="chat-body" aria-live="polite" aria-atomic="false">
+            <ul class="messages" id="chat-messages" role="log"></ul>
+        </div>
+        <div class="chat-input" role="form" aria-label="Chat input area">
+            <input type="text" id="terminal-input" placeholder="Ask me anything about Athar..." disabled aria-label="Chat input">
+            <button id="chat-send" class="btn" aria-label="Send message" disabled>Send</button>
         </div>
     </div>
 
@@ -523,19 +525,11 @@
         (function(){
             try {
                 const t = document.getElementById('terminal-toggle');
-                const term = document.getElementById('ai-terminal');
-                if (t && term) {
-                    t.addEventListener('click', function(e){
+                if (t) {
+                    // Debug-only helper: log clicks without toggling UI (avoid double-toggle)
+                    t.addEventListener('click', function(){
                         console.log('terminal-toggle clicked (debug helper)');
-                        term.classList.toggle('active');
-                        const input = document.getElementById('terminal-input');
-                        if (term.classList.contains('active') && input) {
-                            input.disabled = false;
-                            input.focus();
-                        }
                     });
-                } else {
-                    console.log('Debug: terminal elements not found', !!t, !!term);
                 }
             } catch (err) {
                 console.error('Debug helper error', err);

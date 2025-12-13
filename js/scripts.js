@@ -250,24 +250,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     // 9. AI TERMINAL
     // =============================================
-    function initAITerminal() {
-        const terminalToggle = document.getElementById('terminal-toggle');
-        const terminal = document.getElementById('ai-terminal');
-        const terminalOutput = document.getElementById('terminal-output');
-        const terminalInput = document.getElementById('terminal-input');
-        const closeBtn = terminal.querySelector('.close');
-        // if (!terminalToggle || !terminal || !terminalOutput || !terminalInput || !closeBtn) return;
-        if (!terminalToggle || !terminal || !terminalOutput || !terminalInput) return;
 
-
-        // Boot sequence messages
         function initAITerminal() {
             const terminalToggle = document.getElementById('terminal-toggle');
             const terminal = document.getElementById('ai-terminal');
-            const terminalOutput = document.getElementById('terminal-output');
+            const chatBody = document.getElementById('chat-body');
+            const chatMessages = document.getElementById('chat-messages');
             const terminalInput = document.getElementById('terminal-input');
+            const sendBtn = document.getElementById('chat-send');
             const closeBtn = terminal?.querySelector('.close');
-            if (!terminalToggle || !terminal || !terminalOutput || !terminalInput) return;
+            if (!terminalToggle || !terminal || !chatBody || !chatMessages || !terminalInput) return;
 
             // Conversation state and pending request controller
             const convo = {
@@ -332,29 +324,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Append line to terminal output
-            function appendLine(text, kind = 'system') {
-                const p = document.createElement('p');
-                p.className = `terminal-line ${kind}`;
-                p.innerHTML = text;
-                terminalOutput.appendChild(p);
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                return p;
+            // Create a chat-style message element and append
+            function appendMessage(role, text) {
+                const li = document.createElement('li');
+                li.className = `message ${role}`;
+
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.setAttribute('aria-hidden', 'true');
+                avatar.textContent = role === 'user' ? 'You' : (role === 'assistant' ? 'AI' : 'i');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = text;
+
+                li.appendChild(avatar);
+                li.appendChild(bubble);
+                chatMessages.appendChild(li);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return li;
             }
+
+            // Default boot messages (prevent undefined errors if changed)
+            const bootMessages = ['Allow me to introduce myself - I am  IRIS (Intelligent Responsive Interface System) here to help you explore Athar Sayed\'s professional profile. You can ask me any questions about Athar\'s profile.'];
 
             let messageIndex = 0;
             function displayBootMessage() {
                 if (messageIndex < bootMessages.length) {
-                    const p = document.createElement('p');
-                    p.textContent = `> ${bootMessages[messageIndex]}`;
-                    p.style.animationDelay = `${messageIndex * 0.5}s`;
-                    terminalOutput.appendChild(p);
-                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    appendMessage('system', sanitize(bootMessages[messageIndex]));
                     messageIndex++;
                     setTimeout(displayBootMessage, 500);
                 } else {
                     terminalInput.disabled = false;
                     terminalInput.focus();
+                    if (sendBtn) sendBtn.disabled = false;
                     convo.booted = true;
                 }
             }
@@ -501,17 +504,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 history: convo.history
             };
 
-            const res = await fetch(apiEndpoint('/api/chat'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            // Add a temporary placeholder message while waiting for reply
+            const placeholder = appendMessage('assistant', 'Thinking...');
+            const bubble = placeholder.querySelector('.bubble');
+            bubble.classList.add('typing');
 
-            const data = await res.json();
-            const reply = data?.reply || 'No response';
+            try {
+                const res = await fetch(apiEndpoint('/api/chat'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            convo.history.push({ role: 'assistant', content: reply });
-            appendLine(sanitize(reply), 'assistant');
+                if (!res.ok) {
+                    const errText = await res.text();
+                    bubble.classList.remove('typing');
+                    bubble.innerHTML = sanitize('Error: ' + errText);
+                    return;
+                }
+
+                const data = await res.json();
+                const reply = data?.reply || 'No response';
+
+                convo.history.push({ role: 'assistant', content: reply });
+                bubble.classList.remove('typing');
+                bubble.innerHTML = sanitize(reply);
+            } catch (e) {
+                bubble.classList.remove('typing');
+                bubble.innerHTML = sanitize('Network error: ' + String(e));
+            }
             }
 
             // Local commands fallback
@@ -537,8 +558,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return document.querySelector('#about .about-text')?.innerText || 'About section not found.';
                 },
                 clear: () => {
-                    terminalOutput.innerHTML = '';
-                    return ' ';
+                    chatMessages.innerHTML = '';
+                    return 'Allow me to introduce myself - I am IRIS (Intelligent Responsive Interface System) here to help you explore Athar Sayed\'s professional profile. You can ask me any questions about Athar\'s profile.';
                 },
                 stop: () => {
                     if (convo.pendingRequest && convo.pendingRequest.controller) {
@@ -551,15 +572,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             terminalInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !terminalInput.disabled) {
+                    e.preventDefault();
                     const input = terminalInput.value.trim();
                     if (!input) return;
                     terminalInput.value = '';
-                    appendLine(`> ${sanitize(input)}`, 'user');
+                    appendMessage('user', sanitize(input));
 
                     const key = input.toLowerCase();
                     if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
                         const out = localCommands[key]();
-                        appendLine(out, 'system');
+                        appendMessage('system', out);
                         return;
                     }
 
@@ -567,8 +589,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
+            if (sendBtn) {
+                sendBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (terminalInput.disabled) return;
+                    const input = terminalInput.value.trim();
+                    if (!input) return;
+                    terminalInput.value = '';
+                    appendMessage('user', sanitize(input));
+
+                    const key = input.toLowerCase();
+                    if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
+                        const out = localCommands[key]();
+                        appendMessage('system', out);
+                        return;
+                    }
+
+                    askMistral(input);
+                });
+            }
+
             function toggleTerminal() {
                 terminal.classList.toggle('active');
+                console.log('Toggle AI chat:', terminal.classList.contains('active'));
                 if (terminal.classList.contains('active')) {
                     if (!convo.booted) {
                         displayBootMessage();
@@ -609,22 +652,7 @@ document.addEventListener('DOMContentLoaded', function() {
         heroObserver.observe(heroSection);
     }
 
-        // Toggle terminal
-        function toggleTerminal() {
-            terminal.classList.toggle('active');
-            if (terminal.classList.contains('active')) {
-                if (terminalOutput.innerHTML === '') { // Start boot only if not already booted
-                    displayBootMessage();
-                }
-                terminalInput.focus();
-            }
-        }
 
-        terminalToggle.addEventListener('click', toggleTerminal);
-        closeBtn.addEventListener('click', toggleTerminal);
-    }
-
-    initAITerminal();
 });
 
 // =============================================
