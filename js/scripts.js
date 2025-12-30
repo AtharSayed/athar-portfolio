@@ -345,21 +345,71 @@ document.addEventListener('DOMContentLoaded', function() {
                 return li;
             }
 
-            // Default boot messages (prevent undefined errors if changed)
-            const bootMessages = ['Allow me to introduce myself - I am  IRIS (Intelligent Responsive Interface System) here to help you explore Athar Sayed\'s professional profile. You can ask me any questions about Athar\'s profile.'];
+            // Default boot message (typed token-by-token for nicer UI)
+            const bootMessage = `Allow me to introduce myself - I am IRIS (Intelligent Responsive Interface System) here to help you explore Athar Sayed's professional profile. You can ask me any questions about Athar's profile.`;
 
-            let messageIndex = 0;
-            function displayBootMessage() {
-                if (messageIndex < bootMessages.length) {
-                    appendMessage('system', sanitize(bootMessages[messageIndex]));
-                    messageIndex++;
-                    setTimeout(displayBootMessage, 500);
-                } else {
-                    terminalInput.disabled = false;
-                    terminalInput.focus();
-                    if (sendBtn) sendBtn.disabled = false;
-                    convo.booted = true;
-                }
+            // Helper to append an empty bubble for typing
+            function appendTypingMessage(role) {
+                const li = document.createElement('li');
+                li.className = `message ${role}`;
+
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.setAttribute('aria-hidden', 'true');
+                avatar.textContent = role === 'user' ? 'You' : (role === 'assistant' ? 'AI' : 'i');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.innerHTML = '';
+
+                li.appendChild(avatar);
+                li.appendChild(bubble);
+                chatMessages.appendChild(li);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return bubble;
+            }
+
+            // Type text into a bubble token-by-token (words) and resolve when complete
+            function typeTextToBubble(bubble, text, options = {}) {
+                const tokenDelay = options.tokenDelay || 60; // ms per token
+                const punctuationPause = options.punctuationPause || 300; // extra pause after .!? tokens
+                bubble.classList.add('typing');
+                return new Promise((resolve) => {
+                    const tokens = String(text).split(/\s+/);
+                    let i = 0;
+
+                    function step() {
+                        if (i >= tokens.length) {
+                            bubble.classList.remove('typing');
+                            bubble.innerHTML = sanitize(text);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            resolve();
+                            return;
+                        }
+
+                        const prefix = tokens.slice(0, i + 1).join(' ');
+                        bubble.innerHTML = sanitize(prefix);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                        const currentToken = tokens[i] || '';
+                        const extra = /[.!?]$/.test(currentToken) ? punctuationPause : 0;
+                        i++;
+                        setTimeout(step, tokenDelay + extra);
+                    }
+
+                    step();
+                });
+            }
+
+            // Display the boot message using the typing effect
+            async function displayBootMessage() {
+                terminalInput.disabled = true;
+                const bubble = appendTypingMessage('system');
+                await typeTextToBubble(bubble, bootMessage, { tokenDelay: 50, punctuationPause: 350 });
+                terminalInput.disabled = false;
+                terminalInput.focus();
+                if (sendBtn) sendBtn.disabled = false;
+                convo.booted = true;
             }
 
             // Basic sanitizer to avoid injecting raw HTML
@@ -559,7 +609,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 clear: () => {
                     chatMessages.innerHTML = '';
-                    return 'Allow me to introduce myself - I am IRIS (Intelligent Responsive Interface System) here to help you explore Athar Sayed\'s professional profile. You can ask me any questions about Athar\'s profile.';
+                    // Replay the typed intro (do not return a string — displayBootMessage handles UI)
+                    displayBootMessage();
+                    return null;
                 },
                 stop: () => {
                     if (convo.pendingRequest && convo.pendingRequest.controller) {
@@ -581,7 +633,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const key = input.toLowerCase();
                     if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
                         const out = localCommands[key]();
-                        appendMessage('system', out);
+                        if (out !== undefined && out !== null && out !== '') {
+                            appendMessage('system', out);
+                        }
                         return;
                     }
 
@@ -601,7 +655,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const key = input.toLowerCase();
                     if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
                         const out = localCommands[key]();
-                        appendMessage('system', out);
+                        if (out !== undefined && out !== null && out !== '') {
+                            appendMessage('system', out);
+                        }
                         return;
                     }
 
