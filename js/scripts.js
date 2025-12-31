@@ -245,7 +245,135 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('load', () => {
         document.body.classList.add('loaded');
         initParticleNetworkAnimation(); // Initialize the particle network animation on load
+        initRoleTyping(); // Start dynamic role typing
+        initStatCounters(); // Prepare stat counters
     });
+
+
+// Typing effect for hero role (respects prefers-reduced-motion)
+function initRoleTyping() {
+    const el = document.getElementById('role-typing');
+    if (!el) return;
+    const roles = [
+        'AI Engineer',
+        'LLM & RAG Systems',
+        'Real-Time ML Platforms',
+    ];
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+        el.textContent = roles[0];
+        return;
+    }
+
+    let idx = 0;
+    let charIndex = 0;
+    let deleting = false;
+    let timeoutId = null;
+    const typingSpeed = 70;
+    const deletingSpeed = 40;
+    const hold = 1400;
+
+    function tick() {
+        const current = roles[idx];
+        if (!deleting) {
+            charIndex = Math.min(charIndex + 1, current.length);
+            el.textContent = current.slice(0, charIndex);
+            if (charIndex >= current.length) {
+                deleting = true;
+                timeoutId = setTimeout(tick, hold);
+                return;
+            }
+            timeoutId = setTimeout(tick, typingSpeed);
+        } else {
+            charIndex = Math.max(0, charIndex - 1);
+            el.textContent = current.slice(0, charIndex);
+            if (charIndex === 0) {
+                deleting = false;
+                idx = (idx + 1) % roles.length;
+                timeoutId = setTimeout(tick, 400);
+                return;
+            }
+            timeoutId = setTimeout(tick, deletingSpeed);
+        }
+    }
+
+    // Start after a small delay to allow other hero animations to play
+    timeoutId = setTimeout(tick, 250);
+
+    // Pause/resume typing while page is hidden (save work)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        } else if (!document.hidden && !timeoutId) {
+            timeoutId = setTimeout(tick, 250);
+        }
+    });
+}
+
+// Animated numeric counters inside hero (triggered once when hero becomes visible)
+function initStatCounters() {
+    const stats = document.querySelectorAll('.hero-stats .stat-value');
+    if (!stats.length) return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+        stats.forEach(s => {
+            s.textContent = s.getAttribute('data-target') + (s.getAttribute('data-suffix') || '');
+        });
+        return;
+    }
+
+    const container = document.querySelector('#home');
+    if (!container) return;
+
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                stats.forEach(animateStat);
+                obs.disconnect();
+            }
+        });
+    }, { threshold: 0.4 });
+
+    observer.observe(container);
+
+    function animateStat(el) {
+        const target = parseInt(el.getAttribute('data-target') || '0', 10);
+        const suffix = el.getAttribute('data-suffix') || '';
+        const duration = 1300;
+        const startTime = performance.now();
+
+        function frame(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const current = Math.floor(progress * target);
+            el.textContent = current + (progress >= 1 ? suffix : '');
+            if (progress < 1) requestAnimationFrame(frame);
+            else el.textContent = target + suffix;
+        }
+        requestAnimationFrame(frame);
+    }
+}
+
+// Respect reduced-motion: if user prefers reduced motion, reduce particle intensity or stop animation
+(function patchParticleForReducedMotion() {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    function handleChange() {
+        if (mq.matches) {
+            // If reduce motion is set, lower canvas opacity and stop heavy animation by reducing particle counts
+            const canvas = document.getElementById('hero-background-canvas');
+            if (canvas) {
+                canvas.style.opacity = '0.12';
+            }
+        } else {
+            const canvas = document.getElementById('hero-background-canvas');
+            if (canvas) canvas.style.opacity = '';
+        }
+    }
+    mq.addEventListener ? mq.addEventListener('change', handleChange) : mq.addListener(handleChange);
+    handleChange();
+})();
 
     // =============================================
     // 9. AI TERMINAL
@@ -941,140 +1069,547 @@ function safeQueryAll(selector) {
 // =============================================
 // PARTICLE NETWORK BACKGROUND ANIMATION
 // =============================================
+// =============================================
+// AI SIGNAL FLOW NETWORK - Subtle directional graph with pulsing signals
+// =============================================
 function initParticleNetworkAnimation() {
     const canvas = document.getElementById('hero-background-canvas');
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    let animationFrameId;
 
-    // Define breakpoints for particle behavior
-    const MOBILE_BREAKPOINT = 768; // Common breakpoint for mobile vs. desktop
+    // If previously initialized, clean it up so re-init works after resize or HMR
+    if (canvas._signalCleanup) {
+        try { canvas._signalCleanup(); } catch (e) { /* ignore */ }
+    }
 
-    // Determine particle count and max distance based on screen size
-    let particleCount;
-    let maxDistance;
-    let particleSpeedMultiplier; // New variable for dynamic speed
+    // --- Config & Colors -------------------------------------------------
+    const MOBILE_BREAKPOINT = 768;
 
-    const setParticleConfig = () => {
-        if (window.innerWidth <= MOBILE_BREAKPOINT) {
-            particleCount = 50;   // Reduced for mobile to prevent clutter
-            maxDistance = 100;    // Reduced connection distance for mobile
-            particleSpeedMultiplier = 0.3; // Slower speed for mobile
-        } else {
-            particleCount = 150;  // Desktop particle count
-            maxDistance = 180;    // Desktop connection distance
-            particleSpeedMultiplier = 0.5; // Desktop speed
-        }
+    // Respect user preference to reduce motion
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Color system used by the canvas (matches CSS variables)
+    const COLORS = {
+        ambientRGB: '180,200,255',   // background nodes
+        mainRGB: '180,200,255',      // main nodes
+        lineRGB: '140,160,255',      // connection lines
+        pulseStartRGB: '125,211,252',// #7dd3fc
+        pulseEndRGB: '79,156,255',   // #4f9cff
+        hubGlowRGB: '111,186,255'    // soft hub glow base
     };
 
-    // Set canvas dimensions and handle resize
-    const setCanvasSize = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        // Re-evaluate particle config on resize
-        setParticleConfig(); 
+    // State
+    let nodes = [];
+    let edges = [];
+    let pulses = [];
 
-        // Important: Re-initialize particles if count changes significantly or for new distribution
-        // Clear existing particles and recreate them with new counts/positions
-        particles.length = 0; // Clear the array
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle()); // Re-add particles with new settings
+    let rafId = null;
+    let spawnTimer = null;
+    let running = true; // toggled by visibility
+
+    // DPI-aware canvas resize
+    function setCanvasSize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.round(w * ratio);
+        canvas.height = Math.round(h * ratio);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0); // scale drawing operations
+    }
+
+    // Build nodes in columns (left-to-right bias) with slight jitter
+    function buildGraph() {
+        nodes = [];
+        edges = [];
+
+        const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+        const columns = isMobile ? 3 : 5;
+        const rows = isMobile ? Math.max(3, Math.floor((window.innerHeight / 120))) : Math.max(3, Math.floor((window.innerHeight / 140)));
+
+        // Node counts with small randomness
+        const basePerCol = Math.max(2, Math.floor((isMobile ? 8 : 26) / columns));
+
+        const colGap = window.innerWidth / (columns + 1);
+        const rowGap = window.innerHeight / (rows + 1);
+
+        for (let c = 0; c < columns; c++) {
+            for (let r = 0; r < rows; r++) {
+                // Reduce random jitter for a cleaner layout (more intentional, premium feel)
+                const jitterX = (Math.random() - 0.5) * colGap * 0.12;
+                const jitterY = (Math.random() - 0.5) * rowGap * 0.12;
+                const x = (c + 1) * colGap + jitterX;
+                const y = (r + 1) * rowGap + jitterY;
+                // Slightly larger base sizes for clarity; mobile uses slightly smaller but still clearer nodes
+                const size = (isMobile ? 3.6 : 4.6) + Math.random() * (isMobile ? 1.2 : 1.8);
+                // Decide node layer (ambient vs main) — ambient nodes form the background layer
+                const ambientProbability = isMobile ? 0.45 : 0.28;
+                const layer = Math.random() < ambientProbability ? 'ambient' : 'main';
+                nodes.push({ id: `${c}-${r}`, x, y, col: c, row: r, size, layer, isHub: false });
+            }
         }
-        // Ensure initial positions are correctly set for new particles
-        particles.forEach(p => p.resetInitialPosition());
-    };
 
-    // Particle properties
-    const particles = []; // Initialize as empty, filled by setCanvasSize
-    const particleMinRadius = 1.0; 
-    const particleMaxRadius = 2.5; 
+        // Designate hubs with one primary hub near the hero center and 1-2 secondary hubs offset diagonally
+        const hubCount = Math.min(3, Math.max(2, Math.floor(nodes.length * 0.06)));
+        const midCol = Math.floor(columns / 2);
+        // Candidates near the center columns first
+        let hubCandidates = nodes.filter(n => Math.abs(n.col - midCol) <= 1);
+        if (hubCandidates.length < hubCount) hubCandidates = nodes.slice();
+        // sort by size to pick visually prominent hubs
+        hubCandidates.sort((a, b) => b.size - a.size);
 
-    // Particle class
-    class Particle {
-        constructor() {
-            this.resetInitialPosition(); // Call this on construction
-            this.speedX = (Math.random() - 0.5) * particleSpeedMultiplier; 
-            this.speedY = (Math.random() - 0.5) * particleSpeedMultiplier;
-            this.opacity = Math.random() * 0.6 + 0.2; 
-            this.radius = Math.random() * (particleMaxRadius - particleMinRadius) + particleMinRadius; 
+        // 1) Primary hub: closest node to the hero content center (so it sits behind the hero text)
+        const hero = document.querySelector('#home');
+        let heroCenter = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        if (hero) {
+            const rect = hero.getBoundingClientRect();
+            heroCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        }
+        let primary = null;
+        // find nearest candidate to hero center
+        let bestDist = Infinity;
+        hubCandidates.forEach(n => {
+            const dx = n.x - heroCenter.x;
+            const dy = n.y - heroCenter.y;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            if (d < bestDist) { bestDist = d; primary = n; }
+        });
+        if (primary) {
+            primary.isHub = true;
+            primary.isPrimary = true; // mark for stronger styling
+            primary.size *= 1.6; // primary hub slightly larger
         }
 
-        // Separate method for setting initial position
-        resetInitialPosition() {
-            this.x = Math.random() * canvas.width; 
-            this.y = Math.random() * canvas.height; 
+        // 2) Secondary hubs: pick up to (hubCount - 1) nodes diagonally offset from center
+        const secondariesNeeded = hubCount - (primary ? 1 : 0);
+        const secondaryTargets = [
+            { x: heroCenter.x - window.innerWidth * 0.22, y: heroCenter.y - window.innerHeight * 0.18 },
+            { x: heroCenter.x + window.innerWidth * 0.22, y: heroCenter.y + window.innerHeight * 0.18 }
+        ];
+        let secPicked = 0;
+        for (let t of secondaryTargets) {
+            if (secPicked >= secondariesNeeded) break;
+            let nearest = null; let nearestD = Infinity;
+            nodes.forEach(n => {
+                if (n.isHub) return; // skip already chosen
+                const dx = n.x - t.x; const dy = n.y - t.y; const d = Math.sqrt(dx*dx + dy*dy);
+                if (d < nearestD) { nearestD = d; nearest = n; }
+            });
+            if (nearest) {
+                nearest.isHub = true;
+                nearest.isSecondary = true;
+                nearest.size *= 1.35;
+                secPicked++;
+            }
         }
 
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-
-            // Wrap particles around the screen
-            if (this.x < 0) this.x = canvas.width;
-            if (this.x > canvas.width) this.x = 0;
-            if (this.y < 0) this.y = canvas.height;
-            if (this.y > canvas.height) this.y = 0;
+        // Fallback: if not enough hubs chosen, pick top candidates by size
+        if (secPicked < secondariesNeeded) {
+            hubCandidates.forEach(n => {
+                if (secPicked >= secondariesNeeded) return;
+                if (!n.isHub) { n.isHub = true; n.isSecondary = true; n.size *= 1.28; secPicked++; }
+            });
         }
 
-        draw() {
+        // Connect nodes from column c to nodes in column c+1 (directional left-to-right) and some vertical bias
+        nodes.forEach(src => {
+            if (src.col === columns - 1) return;
+            // Potential destinations are nodes in next column
+            const candidates = nodes.filter(n => n.col === src.col + 1);
+            // Hubs produce more outgoing edges
+            const outCount = 1 + Math.floor(Math.random() * (src.isHub ? 3 : 1));
+            for (let i = 0; i < outCount; i++) {
+                const dest = candidates[Math.floor(Math.random() * candidates.length)];
+                if (!dest) continue;
+                // small vertical bias: prefer nodes roughly at same row
+                const weight = Math.abs(dest.row - src.row);
+                // push edge
+                edges.push({ from: src, to: dest, weight, length: null });
+            }
+        });
+
+        // Compute edge lengths
+        edges.forEach(e => {
+            const dx = e.to.x - e.from.x;
+            const dy = e.to.y - e.from.y;
+            e.length = Math.sqrt(dx*dx + dy*dy);
+        });
+    }
+
+    // Drawing helpers
+    function drawBackground() {
+        // subtle gradient overlay to ensure readability
+        // we keep canvas behind content, so draw edges/nodes softly
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawEdges() {
+        // Slightly stronger, clearer lines with gentle gradients near hubs for improved visibility
+        ctx.lineWidth = 1.15;
+        edges.forEach(e => {
+            const startAlpha = 0.12 + ((e.from.isPrimary || e.from.isHub) ? 0.06 : 0);
+            const endAlpha = 0.12 + ((e.to.isPrimary || e.to.isHub) ? 0.06 : 0);
+
+            // create linear gradient along edge to make lines read with depth and hub emphasis
+            const grad = ctx.createLinearGradient(e.from.x, e.from.y, e.to.x, e.to.y);
+            grad.addColorStop(0, `rgba(${COLORS.lineRGB},${startAlpha})`);
+            grad.addColorStop(0.45, `rgba(${COLORS.mainRGB},${Math.max(startAlpha, endAlpha) * 0.82})`);
+            grad.addColorStop(0.55, `rgba(${COLORS.mainRGB},${Math.max(startAlpha, endAlpha) * 0.5})`);
+            grad.addColorStop(1, `rgba(${COLORS.lineRGB},${endAlpha})`);
+
+            ctx.strokeStyle = grad;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.moveTo(e.from.x, e.from.y);
+            ctx.lineTo(e.to.x, e.to.y);
+            ctx.stroke();
+
+            // subtle directional marker, even more faint near hubs
+            const t = 0.84;
+            const ax = e.from.x + (e.to.x - e.from.x) * t;
+            const ay = e.from.y + (e.to.y - e.from.y) * t;
+            const angle = Math.atan2(e.to.y - e.from.y, e.to.x - e.from.x);
+            ctx.save();
+            ctx.translate(ax, ay);
+            ctx.rotate(angle);
+            ctx.fillStyle = `rgba(${COLORS.mainRGB},${Math.max(startAlpha, endAlpha) * 0.34})`;
+            ctx.beginPath();
+            ctx.moveTo(-2.4, -1.4);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(-2.4, 1.4);
             ctx.fill();
+            ctx.restore();
+        });
+    }
+
+    // Background (ambient) nodes layer
+    function drawAmbientNodes() {
+        nodes.forEach(n => {
+            if (n.layer !== 'ambient') return;
+            const r = n.size * 0.5;
+            const alpha = 0.14; // slightly brighter ambient background
+            const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
+            grd.addColorStop(0, `rgba(${COLORS.ambientRGB},${alpha * 0.95})`);
+            grd.addColorStop(1, `rgba(${COLORS.ambientRGB},0)`);
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    // Main nodes + Hubs layer
+    function drawMainAndHubs() {
+        const t = performance.now();
+
+        // Draw main nodes (non-hub, main layer)
+        nodes.forEach(n => {
+            if (n.layer !== 'main' || n.isHub) return;
+            const r = n.size;
+            const alpha = 0.9; // more visible than ambient
+            const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 3.6);
+            grd.addColorStop(0, `rgba(${COLORS.mainRGB},${alpha * 0.95})`);
+            grd.addColorStop(0.7, `rgba(${COLORS.mainRGB},${alpha * 0.18})`);
+            grd.addColorStop(1, `rgba(${COLORS.mainRGB},0)`);
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw hubs (primary then secondaries)
+        nodes.forEach(n => {
+            if (!n.isHub) return;
+            const isPrimary = !!n.isPrimary;
+            const isSecondary = !!n.isSecondary;
+            const baseR = n.size * (isPrimary ? 1.0 : 0.95);
+
+            // primary breathing animation (slow, subtle)
+            const breath = (isPrimary && !prefersReduced) ? (1 + 0.045 * Math.sin(t / 780)) : 1;
+            const glowAlpha = isPrimary ? 0.36 : (isSecondary ? 0.18 : 0.2);
+
+            // soft radial glow behind the hub (brighter primary)
+            const glowRadius = baseR * (isPrimary ? 6.6 : 4.8) * breath;
+            const glow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowRadius);
+            glow.addColorStop(0, `rgba(${COLORS.hubGlowRGB},${glowAlpha})`);
+            glow.addColorStop(0.5, `rgba(${COLORS.hubGlowRGB},${glowAlpha * 0.5})`);
+            glow.addColorStop(1, `rgba(${COLORS.lineRGB},0)`);
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, glowRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // core hub circle with subtle tint for clarity
+            const coreR = baseR * (isPrimary ? 1.45 : 1.18) * breath;
+            const coreGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, coreR * 3.2);
+            coreGrad.addColorStop(0, `rgba(255,255,255,${isPrimary ? 0.98 : 0.9})`);
+            coreGrad.addColorStop(0.08, `rgba(${COLORS.pulseStartRGB},${isPrimary ? 0.9 : 0.5})`);
+            coreGrad.addColorStop(0.6, `rgba(255,255,255,${isPrimary ? 0.22 : 0.14})`);
+            coreGrad.addColorStop(1, `rgba(${COLORS.lineRGB},0)`);
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, coreR, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    // Pulse management
+    function spawnPulsePath() {
+        // Pulses disabled if user prefers reduced motion
+        if (prefersReduced) return null;
+        const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+        // Limit active pulses: desktop max 2, mobile max 1
+        const activeLimit = isMobile ? 1 : 2;
+        if (pulses.length >= activeLimit) return null;
+
+        // Prefer two-segment paths that route through a hub: source -> hub -> destination
+        const hubs = nodes.filter(n => n.isHub);
+        // collect edges into maps for faster lookup
+        const incomingByNode = new Map();
+        const outgoingByNode = new Map();
+        edges.forEach(e => {
+            if (!incomingByNode.has(e.to.id)) incomingByNode.set(e.to.id, []);
+            incomingByNode.get(e.to.id).push(e);
+            if (!outgoingByNode.has(e.from.id)) outgoingByNode.set(e.from.id, []);
+            outgoingByNode.get(e.from.id).push(e);
+        });
+
+        // Try to build a path via a random hub
+        const hub = hubs.length ? hubs[Math.floor(Math.random() * hubs.length)] : null;
+        if (hub) {
+            const inEdges = incomingByNode.get(hub.id) || edges.filter(e => e.to === hub);
+            const outEdges = outgoingByNode.get(hub.id) || edges.filter(e => e.from === hub);
+            if (inEdges.length && outEdges.length) {
+                const e1 = inEdges[Math.floor(Math.random() * inEdges.length)];
+                const e2 = outEdges[Math.floor(Math.random() * outEdges.length)];
+                const path = [e1, e2];
+                const totalLength = path.reduce((s, seg) => s + (seg.length || 0), 0);
+                // Reduce speed to create calmer motion and slightly larger pulses for better readability
+                const speedMultiplier = isMobile ? 0.48 : 0.78; // slower on mobile and overall reduced
+                const baseSpeed = 90; // px/s baseline
+                const pulse = {
+                    path,
+                    segIndex: 0,
+                    segProgress: 0,
+                    totalLength,
+                    speed: baseSpeed * speedMultiplier,
+                    size: 2.8, // slightly larger and more visible
+                    createdAt: performance.now(),
+                    finishedAt: null
+                };
+                pulses.push(pulse);
+                return pulse;
+            }
+        }
+
+        // Fallback: single-edge pulse if hub routing isn't available
+        const edge = edges[Math.floor(Math.random() * edges.length)];
+        if (!edge) return null;
+        const path = [edge];
+        const totalLength = path[0].length || 0;
+        const speedMultiplier = isMobile ? 0.52 : 0.92; // slightly faster so pulses feel purposeful
+        const pulseSize = isMobile ? 2.0 : 3.4;
+        const pulse = {
+            path,
+            segIndex: 0,
+            segProgress: 0,
+            totalLength,
+            speed: 110 * speedMultiplier,
+            size: pulseSize,
+            createdAt: performance.now(),
+            finishedAt: null
+        };
+        pulses.push(pulse);
+        return pulse;
+    }
+
+    function scheduleNextSpawn() {
+        if (prefersReduced) return;
+        // Spawn cadence tuned per device so pulses are noticeable quickly on desktop
+        const isMobileSpawn = window.innerWidth <= MOBILE_BREAKPOINT;
+        const min = isMobileSpawn ? 1800 : 900;   // faster on desktop
+        const max = isMobileSpawn ? 3200 : 2200;
+        const t = Math.random() * (max - min) + min;
+        spawnTimer = setTimeout(() => {
+            spawnPulsePath();
+            scheduleNextSpawn();
+        }, t);
+    }
+
+    // Render pulses
+    // Pulses travel along the provided path segments; they fade in at the start and fade out when finished.
+    function updateAndDrawPulses(delta) {
+        const now = performance.now();
+        for (let i = pulses.length - 1; i >= 0; i--) {
+            const p = pulses[i];
+
+            // If this pulse has completed its path, allow a short fade-out period before removing
+            if (p.finishedAt) {
+                const fadeDur = 350;
+                const fadeProgress = Math.min(1, (now - p.finishedAt) / fadeDur);
+                if (fadeProgress >= 1) {
+                    pulses.splice(i, 1);
+                    continue;
+                }
+            } else {
+                // Advance along current segment according to speed and delta
+                const seg = p.path[p.segIndex];
+                const segLen = seg.length || 1;
+                const distThisFrame = p.speed * (delta / 1000);
+                const progressInc = distThisFrame / segLen;
+                p.segProgress += progressInc;
+
+                // Move across segments, carrying overflow progress
+                while (p.segProgress >= 1 && p.segIndex < p.path.length) {
+                    p.segProgress -= 1;
+                    p.segIndex++;
+                }
+
+                // If we've reached the end of the path, mark finished (start fade-out)
+                if (p.segIndex >= p.path.length) {
+                    p.finishedAt = now;
+                }
+            }
+
+            // Determine normalized global progress along the full path (0..1)
+            let distCovered = 0;
+            for (let j = 0; j < Math.min(p.segIndex, p.path.length); j++) distCovered += (p.path[j].length || 0);
+            if (p.segIndex < p.path.length) {
+                distCovered += (p.segProgress * (p.path[p.segIndex].length || 0));
+            }
+            const globalProgress = Math.min(1, (p.totalLength ? distCovered / (p.totalLength || 1) : 0));
+
+            // Opacity: fade-in at start and fade-out near end
+            const fadeWindow = 0.12; // fraction of total path used for fade in/out
+            let alpha = 1;
+            if (globalProgress < fadeWindow) alpha = globalProgress / fadeWindow;
+            else if (globalProgress > (1 - fadeWindow)) alpha = (1 - globalProgress) / fadeWindow;
+
+            if (p.finishedAt) {
+                const fadeDur = 350;
+                const fadeProgress = Math.min(1, (now - p.finishedAt) / fadeDur);
+                alpha *= (1 - fadeProgress);
+            }
+
+            // Compute current position along current segment
+            const currentSegIndex = Math.min(p.segIndex, p.path.length - 1);
+            const s = p.path[currentSegIndex];
+            const t = (currentSegIndex === p.segIndex) ? p.segProgress : 0.999;
+            const sx = s.from.x, sy = s.from.y;
+            const ex = s.to.x, ey = s.to.y;
+            const x = sx + (ex - sx) * t;
+            const y = sy + (ey - sy) * t;
+
+            // Draw subtle glow and small core (alpha applied to keep pulses understated)
+            const baseRadius = p.size + (s.to.isHub ? 1.4 : 0);
+            const pulseRadius = baseRadius * (1 + 0.06 * Math.sin((now - p.createdAt) / 340));
+
+            // radial glow (pulses are the brightest logical layer: intelligence layer)
+            const g = ctx.createRadialGradient(x, y, 0, x, y, pulseRadius * 6);
+            g.addColorStop(0, `rgba(${COLORS.pulseStartRGB},${1.0 * alpha})`);
+            g.addColorStop(0.08, `rgba(${COLORS.pulseStartRGB},${0.82 * alpha})`);
+            g.addColorStop(0.28, `rgba(${COLORS.pulseEndRGB},${0.36 * alpha})`);
+            g.addColorStop(0.6, `rgba(${COLORS.pulseEndRGB},${0.14 * alpha})`);
+            g.addColorStop(1, `rgba(${COLORS.lineRGB},0)`);
+
+            ctx.save();
+            // Add a soft shadow for depth; stronger but still controlled
+            ctx.shadowBlur = 18;
+            ctx.shadowColor = `rgba(${COLORS.pulseEndRGB},${0.16 * alpha})`;
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(x, y, pulseRadius * 1.55, 0, Math.PI * 2);
+            ctx.fill();
+
+            // tiny bright core (clear readable dot)
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = `rgba(255,255,255,${1.0 * alpha})`;
+            ctx.beginPath();
+            ctx.arc(x, y, Math.max(1.6, p.size * 1.1), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
     }
 
-    // Initial setup for canvas size and particle configuration
-    setCanvasSize(); // This will also call setParticleConfig and populate 'particles' array
+    // Animation loop (drives network drawing and pulse updates)
+    let lastTs = performance.now();
+    function animate(ts) {
+        const delta = Math.min(50, ts - lastTs); // clamp to avoid huge jumps
+        lastTs = ts;
 
-    // Draw lines between nearby particles
-    const drawLines = () => {
-        for (let i = 0; i < particles.length; i++) {
-            for (let j = i + 1; j < particles.length; j++) {
-                const p1 = particles[i];
-                const p2 = particles[j];
-
-                const distance = Math.sqrt(
-                    (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
-                );
-
-                if (distance < maxDistance) { // Use the dynamically set maxDistance
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    // Line opacity based on distance (fades out as distance increases)
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${((maxDistance - distance) / maxDistance) * 0.6})`; 
-                    ctx.lineWidth = 1.9; 
-                    ctx.stroke();
-                }
-            }
-        }
-    };
-
-    // Animation loop
-    const animate = () => {
+        // Clear
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        particles.forEach(particle => {
-            particle.update();
-            particle.draw();
-        });
+        // Draw layered network for depth: ambient nodes -> edges -> main nodes & hubs -> pulses
+        drawAmbientNodes();
+        drawEdges();
+        drawMainAndHubs();
+        updateAndDrawPulses(delta);
 
-        drawLines();
+        rafId = requestAnimationFrame(animate);
+    }
 
-        animationFrameId = requestAnimationFrame(animate);
+    // Pause when tab inactive
+    function handleVisibility() {
+        if (document.hidden) {
+            running = false;
+            if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        } else {
+            running = true;
+            // schedule spawn if none
+            if (!spawnTimer && !prefersReduced) scheduleNextSpawn();
+            if (!rafId) {
+                lastTs = performance.now();
+                rafId = requestAnimationFrame(animate);
+            }
+        }
+    }
+
+    // Rebuild layout on resize
+    const handleResize = debounce(() => {
+        setCanvasSize();
+        buildGraph();
+        // clear pulses on significant layout change
+        pulses.length = 0;
+    }, 240);
+
+    // Initial setup
+    setCanvasSize();
+    buildGraph();
+
+    // If reduced motion, draw a quiet static network and return
+    if (prefersReduced) {
+        drawEdges();
+        drawNodes();
+        // expose cleanup handler
+        canvas._signalCleanup = function() {
+            window.removeEventListener('resize', handleResize);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            if (spawnTimer) clearTimeout(spawnTimer);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+        return;
+    }
+
+    // start spawn scheduling and animation
+    scheduleNextSpawn();
+    rafId = requestAnimationFrame(animate);
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    // Expose cleanup to allow safe re-init
+    canvas._signalCleanup = function() {
+        window.removeEventListener('resize', handleResize);
+        document.removeEventListener('visibilitychange', handleVisibility);
+        if (spawnTimer) clearTimeout(spawnTimer);
+        if (rafId) cancelAnimationFrame(rafId);
+        // clear references
+        nodes = [];
+        edges = [];
+        pulses = [];
+        canvas._signalCleanup = null;
     };
-
-    // Handle resize event
-    const handleResize = () => {
-        cancelAnimationFrame(animationFrameId); // Stop current animation frame
-        setCanvasSize(); // This will re-evaluate config and re-initialize particles
-        animate(); // Start new animation loop
-    };
-
-    animate(); // Start animation
-
-    window.addEventListener('resize', debounce(handleResize, 250)); // Debounce resize more for dynamic particle counts
 }
