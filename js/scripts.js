@@ -498,20 +498,53 @@ function initStatCounters() {
             }
 
             // Type text into a bubble token-by-token (words) and resolve when complete
+            // This legacy-style typing is used for the boot/system message and supports skipping
             function typeTextToBubble(bubble, text, options = {}) {
                 const tokenDelay = options.tokenDelay || 60; // ms per token
                 const punctuationPause = options.punctuationPause || 300; // extra pause after .!? tokens
                 bubble.classList.add('typing');
-                return new Promise((resolve) => {
-                    const tokens = String(text).split(/\s+/);
-                    let i = 0;
+                let timeouts = [];
+                let done = false;
 
-                    function step() {
+                function clearAll() {
+                    timeouts.forEach(id => clearTimeout(id));
+                    timeouts = [];
+                }
+
+                const controller = {
+                    kind: 'word',
+                    cancel: () => {
+                        if (done) return;
+                        done = true;
+                        clearAll();
+                        bubble.classList.remove('typing');
+                        bubble.innerHTML = sanitize(text);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        delete bubble._typingController;
+                        if (resolveRef) resolveRef();
+                    }
+                };
+
+                let resolveRef;
+                const p = new Promise((resolve) => { resolveRef = resolve; });
+
+                // Register controller so skip functions can reveal instantly
+                bubble._typingController = controller;
+
+                const tokens = String(text).split(/\s+/);
+                let i = 0;
+
+                function scheduleNext(delay) {
+                    const id = setTimeout(() => {
+                        if (done) return;
+
                         if (i >= tokens.length) {
+                            done = true;
                             bubble.classList.remove('typing');
                             bubble.innerHTML = sanitize(text);
                             chatMessages.scrollTop = chatMessages.scrollHeight;
-                            resolve();
+                            delete bubble._typingController;
+                            resolveRef();
                             return;
                         }
 
@@ -522,11 +555,14 @@ function initStatCounters() {
                         const currentToken = tokens[i] || '';
                         const extra = /[.!?]$/.test(currentToken) ? punctuationPause : 0;
                         i++;
-                        setTimeout(step, tokenDelay + extra);
-                    }
+                        scheduleNext(tokenDelay + extra);
+                    }, delay);
+                    timeouts.push(id);
+                }
 
-                    step();
-                });
+                // start
+                scheduleNext(0);
+                return p;
             }
 
             // Display the boot message using the typing effect
@@ -545,6 +581,106 @@ function initStatCounters() {
                 const s = String(str || '');
                 return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
             }
+
+            // Typing animation helpers (UI layer only)
+            // - Non-blocking, per-bubble controllers using requestAnimationFrame
+            // - Skips are supported via bubble._typingController or by calling skipAllTyping()
+            const TYPING_CONFIG = {
+                charsPerSecond: 110,      // default speed (fast feel)
+                minLengthForAnimation: 48 // responses shorter than this are rendered instantly
+            };
+
+            // Track active controllers (weak reference via DOM only)
+            function startTypingAnimation(bubble, fullText, options = {}) {
+                const cfg = Object.assign({}, TYPING_CONFIG, options || {});
+
+                // Very short responses should render instantly for UX
+                if (typeof fullText !== 'string' || fullText.length <= cfg.minLengthForAnimation) {
+                    bubble.innerHTML = sanitize(fullText);
+                    bubble.classList.remove('typing');
+                    return Promise.resolve();
+                }
+
+                // Ensure whitespace/newlines are visible while typing
+                bubble.style.whiteSpace = 'pre-wrap';
+                bubble.innerHTML = '';
+
+                const textNode = document.createTextNode('');
+                bubble.appendChild(textNode);
+
+                let idx = 0;
+                let lastTime = performance.now();
+                let rafId = null;
+                let resolved = false;
+
+                function finish() {
+                    if (rafId) cancelAnimationFrame(rafId);
+                    bubble.innerHTML = sanitize(fullText);
+                    bubble.classList.remove('typing');
+                    bubble.style.whiteSpace = '';
+                    // cleanup controller
+                    if (bubble._typingController && bubble._typingController.kind === 'char') {
+                        delete bubble._typingController;
+                    }
+                    resolved = true;
+                }
+
+                function step(now) {
+                    if (resolved) return;
+                    const elapsed = now - lastTime;
+                    const charsToAdd = Math.max(1, Math.floor(elapsed * (cfg.charsPerSecond / 1000)));
+                    if (idx < fullText.length) {
+                        const nextIdx = Math.min(fullText.length, idx + charsToAdd);
+                        // Append chunk
+                        textNode.nodeValue = fullText.slice(0, nextIdx);
+                        idx = nextIdx;
+                        bubble.classList.add('typing');
+                        // scroll container safely without exotic operators
+                        try {
+                            const container = (bubble.ownerDocument ? bubble.ownerDocument.getElementById('chat-messages') : null) || bubble.parentNode;
+                            if (container) container.scrollTop = container.scrollHeight;
+                        } catch (e) { /* ignore */ }
+                        lastTime = now;
+                        rafId = requestAnimationFrame(step);
+                    } else {
+                        finish();
+                    }
+                }
+
+                // Controller exposes cancel/finish so skipAllTyping can reveal instantly
+                bubble._typingController = {
+                    kind: 'char',
+                    cancel: () => { if (!resolved) finish(); }
+                };
+
+                return new Promise((resolve) => {
+                    // ensure clicking the bubble will finish it
+                    rafId = requestAnimationFrame(function t(now) { step(now); if (resolved) resolve(); });
+                });
+            }
+
+            // Support skipping for legacy word-based typing (used by boot message)
+            function skipBubbleTyping(bubble) {
+                if (!bubble) return;
+                // If a char-based controller exists
+                if (bubble._typingController && bubble._typingController.kind === 'char') {
+                    bubble._typingController.cancel();
+                    return;
+                }
+                // If a legacy word-based controller (created by typeTextToBubble) exists
+                if (bubble._typingController && bubble._typingController.kind === 'word') {
+                    const c = bubble._typingController;
+                    if (c.cancel) c.cancel();
+                }
+            }
+
+            function skipAllTyping() {
+                // Find any dots with typing class and attempt to finish them
+                document.querySelectorAll('.bubble.typing').forEach(b => skipBubbleTyping(b));
+            }
+
+            // Clicking a bubble should instantly reveal it (delegated)
+            // We'll attach this listener later to the chat container so it works for dynamic messages
 
             // Determine API base for local dev vs production
             // If you're serving the frontend with Live Server (127.0.0.1:5500),
@@ -706,7 +842,14 @@ function initStatCounters() {
 
                 convo.history.push({ role: 'assistant', content: reply });
                 bubble.classList.remove('typing');
-                bubble.innerHTML = sanitize(reply);
+                // Store full text (immutable) and reveal via UI-layer typing animation
+                bubble.dataset.fullText = reply;
+                // Start the char-based non-blocking reveal (fast feel). It auto-disables for short replies.
+                startTypingAnimation(bubble, reply, { charsPerSecond: 160, minLengthForAnimation: 48 }).catch(() => {
+                    // Fallback to full render on any error
+                    bubble.classList.remove('typing');
+                    bubble.innerHTML = sanitize(reply);
+                });
             } catch (e) {
                 bubble.classList.remove('typing');
                 bubble.innerHTML = sanitize('Network error: ' + String(e));
@@ -753,6 +896,8 @@ function initStatCounters() {
             terminalInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !terminalInput.disabled) {
                     e.preventDefault();
+                    // New user input should immediately reveal any typing messages
+                    skipAllTyping();
                     const input = terminalInput.value.trim();
                     if (!input) return;
                     terminalInput.value = '';
@@ -775,6 +920,8 @@ function initStatCounters() {
                 sendBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (terminalInput.disabled) return;
+                    // Reveal any in-flight typing before sending new message
+                    skipAllTyping();
                     const input = terminalInput.value.trim();
                     if (!input) return;
                     terminalInput.value = '';
@@ -809,6 +956,19 @@ function initStatCounters() {
 
             terminalToggle.addEventListener('click', toggleTerminal);
             if (closeBtn) closeBtn.addEventListener('click', toggleTerminal);
+
+            // Clicking a bubble instantly reveals its full text (delegated)
+            chatMessages.addEventListener('click', (e) => {
+                const b = e.target.closest('.bubble');
+                if (!b) return;
+                skipBubbleTyping(b);
+            });
+
+            // Pressing any key reveals all typing messages immediately (global shortcut)
+            document.addEventListener('keydown', (e) => {
+                // Don't interfere with other special handlers; always reveal typing first
+                skipAllTyping();
+            });
         }
 
         initAITerminal();
