@@ -41,8 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Menu toggle function
+    let isMenuTransitioning = false;
     const toggleMenu = () => {
-        if (!navList) return;
+        if (!navList || isMenuTransitioning) return;
+        
+        isMenuTransitioning = true;
         
         const isOpening = !navList.classList.contains('active');
         
@@ -50,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         navList.classList.toggle('active', isOpening);
         mobileToggle?.setAttribute('aria-expanded', isOpening);
         
-        // Update icon
+        // Update icon with transition
         if (mobileToggle) {
             mobileToggle.innerHTML = isOpening 
                 ? '<i class="fas fa-times"></i>' 
@@ -66,18 +69,30 @@ document.addEventListener('DOMContentLoaded', function() {
             header.offsetHeight;
             header.style.display = '';
         }
+        
+        // Reset flag after transition
+        setTimeout(() => {
+            isMenuTransitioning = false;
+        }, 350); // Slightly longer than CSS transition
     };
 
-    // Event listeners with passive handling
+    // Event listeners
     if (mobileToggle) {
-        // Click handler
-        mobileToggle.addEventListener('click', toggleMenu);
-        
-        // Touch handler (for mobile)
-        mobileToggle.addEventListener('touchstart', (e) => {
+        // Single click handler for both mouse and touch
+        mobileToggle.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             toggleMenu();
-        }, { passive: false });
+        });
+        
+        // Keyboard support
+        mobileToggle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMenu();
+            }
+        });
     }
 
     // Close menu when clicking links
@@ -94,11 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (navList?.classList.contains('active') &&
             !e.target.closest('nav') &&
             !e.target.closest('.mobile-menu-toggle')) {
+            e.preventDefault();
+            e.stopPropagation();
             toggleMenu();
         }
     };
     document.addEventListener('click', closeOnOutsideClick);
-    document.addEventListener('touchstart', closeOnOutsideClick, { passive: true });
 
     // Reset on desktop resize
     window.addEventListener('resize', debounce(() => {
