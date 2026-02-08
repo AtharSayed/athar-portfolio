@@ -1904,3 +1904,193 @@ footer {
   color: var(--text-light);
   font-size: 0.95rem;
 }
+
+/* About Section - modern card layout */
+.about .container { padding: 0 1rem; }
+.about .section-heading { margin-bottom: 1.25rem; color: var(--secondary-color); }
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+.about-img img {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: var(--shadow-medium);
+  display: block;
+  margin: 0 auto;
+  transition: transform 220ms var(--transition-speed), box-shadow 220ms var(--transition-speed);
+}
+.about-img img:focus, .about-img img:hover { transform: translateY(-6px); box-shadow: var(--shadow-heavy); }
+
+.about-text p { color: var(--text-color-light-bg); margin-bottom: 0.9rem; }
+.about-cta { margin-top: 0.25rem; font-weight: 600; color: var(--ai-secondary); }
+
+.education-cards { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.25rem; }
+.edu-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-light);
+  transition: transform 220ms var(--transition-speed), box-shadow 220ms var(--transition-speed);
+  border: 1px solid rgba(15,23,42,0.03);
+}
+.edu-card:focus, .edu-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-medium); outline: none; }
+.edu-icon {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--ai-primary), var(--ai-secondary));
+  color: #fff;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+.edu-body h4 { margin: 0 0 0.25rem 0; font-size: 1rem; color: var(--secondary-color); }
+.edu-meta { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin-bottom: 0.45rem; }
+.edu-meta .edu-university { font-size: 0.95rem; color: var(--text-color-light-bg); }
+.edu-meta .edu-duration { font-size: 0.85rem; color: var(--text-light); }
+.edu-meta .edu-cgpa { background: rgba(79,156,255,0.08); padding: 0.18rem 0.5rem; border-radius: 999px; color: var(--ai-primary); font-weight:600; font-size:0.85rem; }
+.edu-desc { margin: 0; color: var(--text-color-light-bg); font-size: 0.95rem; }
+
+.profile-links { display:flex; gap:0.6rem; margin-top:1rem; }
+.coding-btn { display:inline-flex; align-items:center; gap:0.6rem; padding:0.45rem 0.8rem; background:transparent; border-radius:10px; border:1px solid rgba(15,23,42,0.04); color:var(--secondary-color); font-weight:600; }
+.coding-btn i { color: var(--ai-primary); }
+
+.about .social-links { margin-top:1rem; display:flex; gap:0.8rem; }
+.about .social-links a { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:10px; background: #fff; color: var(--secondary-color); box-shadow: var(--shadow-light); border:1px solid rgba(15,23,42,0.04); transition: transform 160ms var(--transition-speed), box-shadow 160ms var(--transition-speed); }
+.about .social-links a:hover, .about .social-links a:focus { transform: translateY(-4px); box-shadow: var(--shadow-medium); }
+
+/* small screen adjustments */
+@media (max-width: 880px) {
+  .about-grid { grid-template-columns: 1fr; }
+  .about-img { order: -1; }
+  .about-img img { max-width: 320px; }
+  .education-cards { gap: 0.75rem; }
+}
+
+/* Screen reader helper */
+.sr-only { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
+
+/* Refinements: typography, spacing, timeline accent for education */
+.about .section-heading { font-size: clamp(1.6rem, 2.6vw, 2rem); letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+.name-highlight { color: var(--secondary-color); font-weight: 700; font-size: 1.05rem; display: inline-block; letter-spacing: -0.01em; }
+.about-text p { margin-bottom: 0.85rem; max-width: 55ch; }
+
+.education-cards { position: relative; padding-left: 44px; }
+.education-cards::before {
+  content: '';
+  position: absolute;
+  left: 30px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: linear-gradient(180deg, rgba(79,156,255,0.18), rgba(127,195,255,0.06));
+  border-radius: 4px;
+  pointer-events: none;
+}
+.edu-card { position: relative; padding: 0.9rem 1rem 0.9rem 0.8rem; }
+.edu-card::after {
+  content: '';
+  position: absolute;
+  left: 22px; /* aligns with center of .edu-icon */
+  top: 18px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.6);
+  border: 3px solid rgba(79,156,255,0.95);
+  transform: translateX(-50%);
+  z-index: 1;
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+}
+.edu-card:hover::after, .edu-card:focus::after { transform: translateX(-50%) scale(1.05); box-shadow: 0 6px 20px rgba(79,156,255,0.12); }
+
+.edu-icon { position: relative; z-index: 2; }
+.edu-body { z-index: 2; }
+
+/* stronger hover accent: subtle left color bar */
+.edu-card:hover { box-shadow: 0 14px 34px rgba(16,24,40,0.08); }
+.edu-card:hover .edu-icon { transform: translateY(-3px); }
+
+/* Rhythm: add breathing room below about section */
+.about { padding-bottom: 3.25rem; }
+
+@media (max-width: 880px) {
+  .about .section-heading { text-align: left; }
+  .education-cards { padding-left: 24px; }
+  .education-cards::before { left: 18px; }
+  .edu-card::after { left: 12px; }
+}
+
+  /* Mobile-specific refinements (<=768px) to improve spacing, centering, and readability */
+  @media (max-width: 768px) {
+    /* Center the section heading */
+    .about .section-heading { text-align: center; margin-bottom: 1rem; }
+
+    /* Single-column stack and clear vertical rhythm */
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem 0; /* row gap */
+      align-items: center;
+    }
+
+    /* Ensure stacking order: Title -> Image -> Text -> Education -> Buttons */
+    .about-img { order: 0; }
+    .about-text { order: 1; }
+    .education-cards { order: 2; }
+    .profile-links, .about .social-links { order: 3; }
+
+    /* Profile image: smaller and centered with consistent spacing */
+    .about-img img {
+      max-width: 240px;
+      width: 60%;
+      display: block;
+      margin: 0.6rem auto 1rem auto;
+      border-radius: 14px;
+    }
+
+    /* Add comfortable left/right padding to the section container */
+    .about { padding: 2.25rem 1.25rem 2.25rem; }
+    .about .container { padding-left: 0.5rem; padding-right: 0.5rem; }
+
+    /* About text readability */
+    .about-text p { font-size: 1rem; line-height: 1.55; margin-bottom: 0.9rem; text-align: center; }
+    .about-cta { margin-top: 0.6rem; }
+
+    /* Education cards: full width, comfortable padding, aligned with timeline */
+    .education-cards { padding-left: 20px; margin-top: 1rem; }
+    .education-cards::before { left: 12px; }
+    .edu-card {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      border-radius: 10px;
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+    }
+    .edu-card .edu-body { flex: 1; }
+
+    /* Increase tappable space for action links */
+    .profile-links { justify-content: center; margin-top: 1rem; gap: 0.75rem; }
+    .coding-btn { padding: 0.6rem 0.9rem; }
+
+    /* Center social icons */
+    .about .social-links { justify-content: center; }
+
+    /* Reduce visual clutter of the timeline marker on small screens */
+    .edu-card::after { left: 8px; top: 20px; width: 10px; height: 10px; border-width: 2.5px; }
+
+    /* Slightly larger heading and tighter line spacing for mobile */
+    .about .section-heading { font-size: 1.5rem; line-height: 1.15; }
+  }
