@@ -271,7 +271,7 @@ function initRoleTyping() {
     const el = document.getElementById('role-typing');
     if (!el) return;
     const roles = [
-        'AI Engineer',
+        'AI Software Engineer',
         'LLM & RAG Systems',
         'Real-Time ML Platforms',
     ];
