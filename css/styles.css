@@ -1334,10 +1334,12 @@ section h2:hover span::after {
 
 .timeline {
   position: relative;
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 1rem;
 }
+
+.timeline.container { max-width: 900px; }
 
 .timeline::before {
   content: '';
@@ -1394,6 +1396,57 @@ section h2:hover span::after {
   margin-bottom: 1rem;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+/* Company logo + role alignment */
+.role-company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.company-logo {
+  width: 96px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.timeline-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 700px) {
+  .company-logo { width: 64px; }
+  .timeline-header { align-items: flex-start; }
+}
+
+/* Improve role/title typography and list spacing */
+.role-company h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: var(--primary-color);
+}
+.role-text { display: flex; flex-direction: column; }
+.role-title { margin: 0; font-size: 1.05rem; color: var(--primary-color); }
+.company-name { font-size: 0.95rem; color: var(--text-light); margin-top: 4px; }
+
+/* Header accent and accessibility tweaks */
+.timeline-item[role="article"] { outline: none; }
+.timeline-item .timeline-header {
+  background: linear-gradient(180deg, rgba(79,156,255,0.03), transparent);
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+}
+.timeline-item { padding: 1.25rem; }
+.timeline-item ul { margin-top: 0.6rem; padding-left: 1.1rem; }
+.timeline-item li { margin-bottom: 0.7rem; color: #444; }
+
+@media (max-width: 700px) {
+  .timeline-header { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+  .timeline-meta { margin-top: 4px; }
 }
 
 .timeline-item h3 {

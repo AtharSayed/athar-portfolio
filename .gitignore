@@ -12,3 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 test-chatbot.ps1
 server.log
+
+# Future additions 
+rag/
+chatbot/
+
