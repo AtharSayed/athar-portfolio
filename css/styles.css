@@ -35,6 +35,9 @@
   --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.08);
   --shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.1);
   --shadow-heavy: 0 15px 40px rgba(0, 0, 0, 0.15);
+  --surface-color: rgba(255, 255, 255, 0.9);
+  --surface-border: rgba(15, 23, 42, 0.08);
+  --surface-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
 }
 
 * {
@@ -51,7 +54,7 @@ body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.7;
   color: var(--text-color-light-bg);
-  background-color: #f9f9f9;
+  background: linear-gradient(180deg, #fcfcfe 0%, #f5f7fb 100%);
   overflow-x: hidden;
 }
 
@@ -76,6 +79,10 @@ h1, h2, h3, h4, h5, h6 {
 section {
   padding: 4rem 0;
   position: relative; /* For potential future animations */
+}
+
+section[id] {
+  scroll-margin-top: 90px;
 }
 
 /* Responsive Typography */
@@ -117,6 +124,7 @@ p {
 .btn:hover {
   transform: translateY(-4px);
   box-shadow: var(--btn-shadow-hover);
+  background: linear-gradient(135deg, var(--ai-primary), #5bc0ff);
 }
 
 .btn:active {
@@ -296,6 +304,33 @@ nav ul li a:hover {
   overflow: hidden; /* Ensure no overflow from potential animations */
 }
 
+.hero::before,
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: auto;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.hero::before {
+  width: 280px;
+  height: 280px;
+  background: rgba(79, 156, 255, 0.18);
+  top: 8%;
+  left: 6%;
+}
+
+.hero::after {
+  width: 320px;
+  height: 320px;
+  background: rgba(192, 108, 132, 0.16);
+  bottom: 4%;
+  right: 6%;
+}
+
 /* Canvas for geometric animation */
 #hero-background-canvas {
     position: absolute;
@@ -310,9 +345,14 @@ nav ul li a:hover {
 .hero-content {
   max-width: 800px;
   width: 100%;
-  padding: 0 1rem;
+  padding: 2.25rem 2rem;
   position: relative; /* To be above the ::before pseudo-element */
   z-index: 2; /* Ensure content is above canvas */
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(10px);
 }
 
 .hero-content h1 {
@@ -1067,12 +1107,13 @@ section h2:hover span::after {
 }
 
 .project-card {
-  background: #fff;
+  background: var(--surface-color);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   overflow: hidden;
   transition: all var(--transition-speed) ease;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 
 .project-card:hover {
@@ -1144,15 +1185,16 @@ section h2:hover span::after {
 }
 
 .blog-card {
-  background: #fff;
+  background: var(--surface-color);
   border-radius: var(--border-radius);
   padding: 1rem;
-  box-shadow: var(--shadow-light);
-  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: var(--surface-shadow);
+  border: 1px solid var(--surface-border);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  backdrop-filter: blur(10px);
 }
 
 .blog-card:hover {
@@ -1220,12 +1262,13 @@ section h2:hover span::after {
   display: grid;
   grid-template-columns: 100px 1fr;
   gap: 2rem;
-  background: #fff;
+  background: var(--surface-color);
   padding: 2rem;
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   transition: all var(--transition-speed) ease;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 
 .publication-card:hover {
@@ -1295,12 +1338,14 @@ section h2:hover span::after {
 }
 
 .skill-category {
-  background: #fff;
+  background: var(--surface-color);
   padding: 2rem;
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   transition: all var(--transition-speed) ease;
   text-align: center;
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 
 .skill-category:hover {
@@ -1353,15 +1398,16 @@ section h2:hover span::after {
 }
 
 .timeline-item {
-  background: #fff;
+  background: var(--surface-color);
   padding: 2rem;
   margin-bottom: 2rem;
   margin-left: 4rem;
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   position: relative;
   transition: all var(--transition-speed) ease;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 
 .timeline-item::before {
@@ -1508,13 +1554,14 @@ section h2:hover span::after {
 }
 
 .certification-card {
-  background: #fff;
+  background: var(--surface-color);
   padding: 2rem;
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   transition: all var(--transition-speed) ease;
   text-align: center;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 
 .certification-card:hover {
@@ -1921,13 +1968,14 @@ footer {
 }
 
 .achievement-card {
-  background: #fff;
+  background: var(--surface-color);
   padding: 2rem;
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   transition: all var(--transition-speed) ease;
   text-align: center;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 
 .achievement-card:hover {
@@ -1988,12 +2036,13 @@ footer {
   display: flex;
   gap: 1rem;
   align-items: flex-start;
-  background: #ffffff;
+  background: var(--surface-color);
   padding: 1rem;
   border-radius: 12px;
-  box-shadow: var(--shadow-light);
+  box-shadow: var(--surface-shadow);
   transition: transform 220ms var(--transition-speed), box-shadow 220ms var(--transition-speed);
-  border: 1px solid rgba(15,23,42,0.03);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(10px);
 }
 .edu-card:focus, .edu-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-medium); outline: none; }
 .edu-icon {
