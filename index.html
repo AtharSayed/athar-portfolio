@@ -79,9 +79,16 @@
                 <div class="about-text">
                         <p>Hi, I'm <strong class="name-highlight">Athar Sayed</strong>.</p>
 
-                        <p>I build intelligent software from AI agents and LLM-powered applications to scalable backend systems—designed for production, not prototypes.</p>
+                        <p>I design and build production-ready systems at the intersection of agentic AI, large language models, and scalable backend engineering.</p>
 
-                        <p>I hold an <strong>M.Tech in Artificial Intelligence</strong> from NMIMS and have industry experience developing Generative AI solutions, RAG pipelines, workflow automation, and backend infrastructure. My goal is to build AI that is reliable, secure, scalable, and delivers measurable business impact.</p>
+                        <div class="about-highlights" aria-label="Professional focus areas">
+                            <span class="highlight-pill">Agentic AI</span>
+                            <span class="highlight-pill">LLM &amp; RAG</span>
+                            <span class="highlight-pill">Backend Systems</span>
+                            <span class="highlight-pill">Applied ML</span>
+                        </div>
+
+                        <p>I hold an <strong>M.Tech in Artificial Intelligence</strong> from NMIMS and have hands-on experience developing GenAI solutions, retrieval systems, workflow automation, and resilient infrastructure. My focus is on building AI that is reliable, secure, measurable, and ready for real-world use.</p>
 
                         <p class="about-cta">Let's build the next generation of AI-powered products together.</p>
 
@@ -133,6 +140,9 @@
 
     <section id="projects" class="projects">
         <h2><span>Featured Projects</span></h2>
+        <div class="section-intro">
+            <p>Selected work across agentic AI, machine learning, and data-driven platforms — designed to be practical, reliable, and impactful.</p>
+        </div>
         <div class="projects-grid">
             <div class="project-card">
                 <div class="project-img">
@@ -141,6 +151,10 @@
 
                 <div class="project-content">
                     <h3>Der Kurator: Document Grounded RAG System</h3>
+                    <div class="project-meta">
+                        <span class="project-tag">RAG</span>
+                        <span class="project-tag">LLM</span>
+                    </div>
 
                     <ul class="project-details">
                         <li>Built an end-to-end document-grounded RAG system covering ingestion, retrieval, generation, and evaluation.</li>
@@ -162,6 +176,10 @@
                 </div>
                 <div class="project-content">
                     <h3>Vigilix: Network Intrusion Detection System</h3>
+                    <div class="project-meta">
+                        <span class="project-tag">ML</span>
+                        <span class="project-tag">Security</span>
+                    </div>
                     <ul class="project-details">
                         <li>Developed a Network Intrusion Detection System (NIDS) using the UNSW-NB15 dataset, achieving 80%+ accuracy in intrusion detection.</li>
                         <li>Evaluated ML models (XGBoost, Random Forest, Isolation Forest), with XGBoost achieving 87.95% accuracy, 85.35% precision, and 89.61% F1-score.</li>
@@ -180,6 +198,10 @@
                 </div>
                 <div class="project-content">
                     <h3>IntelliTube: AI Powered YouTube Insight Engine</h3>
+                    <div class="project-meta">
+                        <span class="project-tag">AI Platform</span>
+                        <span class="project-tag">Speech</span>
+                    </div>
                     <ul class="project-details">
                         <li>Developed end-to-end YouTube video analysis platform with 100% local execution</li>
                         <li>Achieved 95% transcription accuracy using Faster Whisper</li>
@@ -199,6 +221,10 @@
                 </div>
                 <div class="project-content">
                     <h3>ScriptSense: Personality Prediction</h3>
+                    <div class="project-meta">
+                        <span class="project-tag">Computer Vision</span>
+                        <span class="project-tag">ML</span>
+                    </div>
                     <ul class="project-details">
                         <li>Developed ScriptSense, a hybrid CNN-graphology tool predicting Big Five personality traits from handwriting images using TensorFlow/Keras and OpenCV for feature extraction. </li>
                         <li>Integrated CNN predictions with graphology rules to generate combined, confidence-scored trait insights.</li>
@@ -217,6 +243,10 @@
                 </div>
                 <div class="project-content">
                     <h3>Academic Dashboard Mtech Students </h3>
+                    <div class="project-meta">
+                        <span class="project-tag">Analytics</span>
+                        <span class="project-tag">Dashboard</span>
+                    </div>
                     <ul class="project-details">
                         <li>Collected and preprocessed academic and demographic data for 44 M.Tech students, ensuring 100% data accuracy through thorough cleaning and validation techniques.</li>
                         <li>Analyzed data to extract key insights, leading to improved visualization strategies and highlighting trends in academic performance and participation.</li>
@@ -235,6 +265,10 @@
                 </div>
                 <div class="project-content">
                     <h3>StreamPulse : Real-Time E-Commerce Transactions Dashboard</h3>
+                    <div class="project-meta">
+                        <span class="project-tag">Streaming</span>
+                        <span class="project-tag">Data Viz</span>
+                    </div>
                     <ul class="project-details">
                         <li>Built real-time e-commerce transaction monitoring system using Kafka + Spark Structured Streaming + Streamlit, processing 1,000+ events/min with <2s latency.</li>
                         <li>Implemented end-to-end streaming pipeline: Kafka producer simulating e-commerce events → Spark job for data cleansing and aggregation → live-updating Plotly dashboard with dark theme.</li>
@@ -558,7 +592,7 @@
             
             <div class="certification-card">
                 <div class="certification-icon">
-                    <i class="fab fa-linux" style="color: #1b1b1b;"></i>
+                    <i class="fab fa-linux" style="color: #f5f7fb;"></i>
                 </div>
                 <h3>Linux Mastery Mastering the Command Line </h3>
                 <p>Udemy</p>
@@ -609,7 +643,7 @@
             <ul class="messages" id="chat-messages" role="log"></ul>
         </div>
         <div class="chat-input" role="form" aria-label="Chat input area">
-            <input type="text" id="terminal-input" placeholder="Ask me anything about Athar..." disabled aria-label="Chat input">
+            <input type="text" id="terminal-input" placeholder="Ask about my work, experience, or projects..." disabled aria-label="Chat input">
             <button id="chat-send" class="btn" aria-label="Send message" disabled>Send</button>
         </div>
     </div>

@@ -490,7 +490,7 @@ function initStatCounters() {
             }
 
             // Default boot message (typed token-by-token for nicer UI)
-            const bootMessage = `Allow me to introduce myself - I am IRIS (Intelligent Responsive Interface System) here to help you explore Athar Sayed's professional profile. You can ask me any questions about Athar's profile.`;
+            const bootMessage = `I’m IRIS, your portfolio guide. I can help you explore Athar Sayed’s background, projects, experience, and technical focus in a more conversational way.`;
 
             // Helper to append an empty bubble for typing
             function appendTypingMessage(role) {
