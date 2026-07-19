@@ -47,6 +47,7 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scroll-padding-top: 88px;
 }
 
 body {
@@ -61,6 +62,31 @@ a {
   text-decoration: none;
   color: var(--primary-color);
   transition: all var(--transition-speed) ease;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--btn-focus-ring);
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3.5rem;
+  z-index: 1400;
+  background: var(--secondary-color);
+  color: var(--light-color);
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: top 180ms ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -235,10 +261,17 @@ nav ul li a {
   font-size: 0.95rem;
 }
 
-nav ul li a:hover {
+nav ul li a:hover,
+nav ul li a:focus-visible {
   color: var(--primary-color);
   background: rgba(127, 180, 255, 0.12);
   transform: translateY(-1px);
+}
+
+nav ul li a.active {
+  color: var(--secondary-color);
+  background: rgba(127, 180, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(127, 180, 255, 0.18);
 }
 
 /* Mobile Menu */
@@ -1129,6 +1162,31 @@ section h2 span::after {
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
 }
 
+.project-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.project-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.project-links {
+  margin-top: auto;
+  padding-top: 0.8rem;
+}
+
+.blog-card,
+.publication-card,
+.certification-card,
+.achievement-card,
+.skill-category {
+  height: 100%;
+}
+
 .project-card:hover,
 .blog-card:hover,
 .publication-card:hover,
@@ -1960,6 +2018,32 @@ footer {
     gap: 1.25rem;
   }
 
+  .award-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .award-copy,
+  .award-preview {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .award-preview {
+    align-items: stretch;
+  }
+
+  .award-certificate-thumb {
+    max-width: 100%;
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+  }
+
+  .view-certificate-btn {
+    max-width: none;
+  }
+
   .publication-card {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -2132,6 +2216,205 @@ footer {
 .achievement-card p {
   color: var(--text-light);
   font-size: 0.95rem;
+}
+
+.awards-section {
+  max-width: 1000px;
+  margin: 2.4rem auto 0;
+  width: 100%;
+}
+
+.awards-header {
+  margin-bottom: 0.9rem;
+}
+
+.awards-header h3 {
+  font-size: 1.2rem;
+  color: var(--secondary-color);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.award-card {
+  padding: 1.25rem;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(14, 21, 35, 0.96) 0%, rgba(10, 15, 27, 0.96) 100%);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.award-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.award-copy {
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.award-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+}
+
+.award-title-row h4 {
+  color: var(--secondary-color);
+  font-size: 1.05rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.award-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ai-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(127, 180, 255, 0.12);
+  border: 1px solid rgba(127, 180, 255, 0.16);
+  white-space: nowrap;
+}
+
+.award-org {
+  color: var(--text-color-light-bg);
+  font-size: 0.95rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.6;
+}
+
+.award-description {
+  color: var(--text-light);
+  font-size: 0.94rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.award-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  flex: 0 0 220px;
+  min-width: 0;
+}
+
+.award-certificate-thumb {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(127, 180, 255, 0.2);
+  box-shadow: var(--shadow-light);
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.view-certificate-btn {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  max-width: 220px;
+}
+
+.certificate-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.84);
+  backdrop-filter: blur(12px);
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 220ms ease;
+}
+
+.certificate-modal[hidden] {
+  display: none;
+}
+
+.certificate-modal-backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.certificate-modal-panel {
+  position: relative;
+  width: min(92vw, 920px);
+  max-height: 92vh;
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 15, 27, 0.98);
+  box-shadow: var(--shadow-heavy);
+  transform: translateY(0) scale(1);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.certificate-modal[hidden] .certificate-modal-panel {
+  transform: translateY(10px) scale(0.98);
+}
+
+.certificate-modal-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.certificate-modal-image {
+  display: block;
+  max-width: 100%;
+  max-height: min(82vh, 760px);
+  width: auto;
+  height: auto;
+  border-radius: 16px;
+  object-fit: contain;
+}
+
+.certificate-modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--secondary-color);
+  cursor: pointer;
+  box-shadow: var(--shadow-light);
+  z-index: 2;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.certificate-modal-close:hover,
+.certificate-modal-close:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(127, 180, 255, 0.16);
+  outline: none;
+}
+
+body.modal-open {
+  overflow: hidden;
 }
 
 /* About Section - modern card layout */

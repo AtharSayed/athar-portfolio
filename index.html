@@ -12,19 +12,21 @@
     </style>
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header>
         <div class="nav-container">
             <a href="#home" class="logo">Athar Sayed</a>
-            <nav>
+            <nav aria-label="Primary navigation">
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#projects">Projects</a></li>
-                    <li><a href="#achievements">Achievements</a></li>
-                    <li><a href="#skills">Skills</a></li>
-                    <li><a href="#experience">Experience</a></li>
-                    <li><a href="#certifications">Certifications</a></li>
-                    <li><a href="#blogs">Blogs</a></li>
+                    <li><a class="nav-link" href="#home">Home</a></li>
+                    <li><a class="nav-link" href="#about">About</a></li>
+                    <li><a class="nav-link" href="#projects">Projects</a></li>
+                    <li><a class="nav-link" href="#achievements">Achievements</a></li>
+                    <li><a class="nav-link" href="#skills">Skills</a></li>
+                    <li><a class="nav-link" href="#experience">Experience</a></li>
+                    <li><a class="nav-link" href="#publications">Publications</a></li>
+                    <li><a class="nav-link" href="#certifications">Certifications</a></li>
+                    <li><a class="nav-link" href="#blogs">Blogs</a></li>
                 </ul>
             </nav>
             <button class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -33,6 +35,7 @@
         </div>
     </header>
 
+    <main id="main-content">
     <section id="home" class="hero">
         <canvas id="hero-background-canvas"></canvas>
         <div class="hero-content">
@@ -89,7 +92,7 @@
                             <span class="highlight-pill">Applied ML</span>
                         </div>
 
-                        <p>I hold an <strong>M.Tech in Artificial Intelligence</strong> from NMIMS and have hands-on experience developing GenAI solutions, retrieval systems, workflow automation, and resilient infrastructure. My focus is on building AI that is reliable, secure, measurable, and ready for real-world use.</p>
+                        <p>I completed my <strong>M.Tech in Artificial Intelligence</strong> from NMIMS in 2026 and have hands-on experience developing GenAI solutions, retrieval systems, workflow automation, and resilient infrastructure. My focus is on building AI that is reliable, secure, measurable, and ready for real-world use.</p>
 
                         <p class="about-cta">Let's build the next generation of AI-powered products together.</p>
                     </div>
@@ -103,7 +106,7 @@
                                 <h4 id="mtech-title">M.Tech — Artificial Intelligence</h4>
                                 <div class="edu-meta">
                                     <span class="edu-university">Mukesh Patel School of Technology Management & Engineering</span>
-                                    <span class="edu-duration">2024 — 2026</span>
+                                    <span class="edu-duration">2024 — 2026 • Completed</span>
                                     <span class="edu-cgpa" title="CGPA">CGPA: <strong>9.08 / 10</strong></span>
                                 </div>
                 
@@ -356,6 +359,29 @@
                     </div>
                 </div>
             </div>
+
+            <div class="publication-card">
+                <div class="pub-left">
+                    <div class="publication-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="conference-badge">Springer Nature 2026</div>
+                </div>
+                <div class="pub-right">
+                    <h3 class="pub-title">
+                        Predictive Analysis of Stress Based on Vital Physiological Metrics
+                    </h3>
+                    <p class="pub-authors"><strong>Authors:</strong> Athar Sayed, et al. · <strong>Journal:</strong> Springer Nature · <strong>Published:</strong> 2 June 2026</p>
+                    <p class="pub-abstract">
+                        This study uses wearable-sensor data and machine learning to detect stress in real time, offering a more objective and timely alternative to conventional self-report methods.
+                    </p>
+                    <div class="publication-links">
+                        <a href="https://link.springer.com/chapter/10.1007/978-981-95-7238-0_14" target="_blank" class="btn">
+                            <i class="fas fa-external-link-alt"></i> Springer Link
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -399,6 +425,28 @@
                 <h3>150+</h3>
                 <p>LeetCode Problems Solved</p>
             </div>
+        </div>
+
+        <div class="awards-section" aria-labelledby="awards-heading">
+            <div class="awards-header">
+                <h3 id="awards-heading">Awards & Recognition</h3>
+            </div>
+            <article class="award-card">
+                <div class="award-content">
+                    <div class="award-copy">
+                        <div class="award-title-row">
+                            <h4>Student Placement Coordinator — Certificate of Appreciation</h4>
+                            <span class="award-period">Academic Year 2025–2026</span>
+                        </div>
+                        <p class="award-org">NMIMS Mukesh Patel School of Technology Management & Engineering (MPSTME)</p>
+                        <p class="award-description">Recognized for valuable contributions to the Placement Cell as a Student Placement Coordinator, supporting student coordination and placement-related activities during the Academic Year 2025–2026.</p>
+                    </div>
+                    <div class="award-preview">
+                        <img src="images/student-placement-coordinator-certificate.jpeg" alt="Certificate of Appreciation awarded to Athar Sayed for contributions as Student Placement Coordinator at NMIMS MPSTME, Academic Year 2025–2026." loading="lazy" class="award-certificate-thumb">
+                        <button type="button" class="btn btn-outline view-certificate-btn" data-certificate-src="images/student-placement-coordinator-certificate.jpeg" aria-haspopup="dialog" aria-controls="certificate-modal">View Certificate</button>
+                    </div>
+                </div>
+            </article>
         </div>
     </section>
 
@@ -652,6 +700,8 @@
         </div>
     </div>
 
+    </main>
+
     <footer>
         <div class="footer-content">
             <p>&copy; <span id="current-year"></span> Athar Sayed. All rights reserved.</p>
@@ -659,9 +709,23 @@
                 <a href="#home">Home</a>
                 <a href="#about">About</a>
                 <a href="#projects">Projects</a>
+                <a href="#publications">Publications</a>
             </div>
         </div>
     </footer>
+
+    <div class="certificate-modal" id="certificate-modal" role="dialog" aria-modal="true" aria-labelledby="certificate-modal-title" aria-describedby="certificate-modal-desc" hidden>
+        <div class="certificate-modal-backdrop" data-close-modal></div>
+        <div class="certificate-modal-panel">
+            <button type="button" class="certificate-modal-close" aria-label="Close certificate preview" data-close-modal>
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="certificate-modal-content">
+                <p id="certificate-modal-desc" class="sr-only">Full view of the certificate of appreciation for Athar Sayed.</p>
+                <img src="images/student-placement-coordinator-certificate.jpeg" alt="Certificate of Appreciation awarded to Athar Sayed for contributions as Student Placement Coordinator at NMIMS MPSTME, Academic Year 2025–2026." class="certificate-modal-image">
+            </div>
+        </div>
+    </div>
 
     <script src="js/scripts.js"></script>
     <!-- Debug helper: quick toggle handler to verify terminal toggle works locally -->
