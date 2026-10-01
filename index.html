@@ -4,14 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Athar Sayed - AI/ML Engineer</title>
+    <meta name="description" content="Portfolio of Athar Sayed, AI/ML Engineer building agentic AI, LLM and RAG systems, and scalable backend platforms.">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Athar Sayed - AI/ML Engineer">
+    <meta property="og:description" content="Projects and experience across agentic AI, LLM and RAG systems, and scalable backend engineering.">
+    <meta property="og:image" content="images/Athar-Formals.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Athar Sayed - AI/ML Engineer">
+    <meta name="twitter:description" content="Projects and experience across agentic AI, LLM and RAG systems, and scalable backend engineering.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/hud.css">
+    <link rel="stylesheet" href="css/chat-hud.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         html { scroll-behavior: smooth; }
     </style>
 </head>
 <body>
+    <div class="boot-screen" id="boot-screen" role="status" aria-live="polite">
+        <div class="boot-frame">
+            <p class="hud-kicker">ATHAR SAYED // PORTFOLIO SYSTEMS</p>
+            <p class="boot-title">Initializing portfolio...</p>
+            <div class="boot-progress" role="presentation"><span></span></div>
+            <button class="boot-skip" type="button" data-boot-skip>Skip intro</button>
+        </div>
+    </div>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header>
         <div class="nav-container">
@@ -38,6 +60,26 @@
     <main id="main-content">
     <section id="home" class="hero">
         <canvas id="hero-background-canvas"></canvas>
+        <div class="hero-layout">
+        <div class="arc-reactor" aria-hidden="true">
+            <svg viewBox="0 0 320 320" role="presentation">
+                <circle class="reactor-shell" cx="160" cy="160" r="142"></circle>
+                <circle class="reactor-track" cx="160" cy="160" r="125"></circle>
+                <g class="reactor-spin">
+                    <circle class="reactor-ring" cx="160" cy="160" r="108"></circle>
+                    <path class="reactor-spoke" d="M160 35v28m0 194v28M35 160h28m194 0h28M71.6 71.6l19.8 19.8m137.2 137.2 19.8 19.8m0-176.8-19.8 19.8M91.4 228.6l-19.8 19.8"></path>
+                    <circle class="reactor-ring reactor-ring-inner" cx="160" cy="160" r="77"></circle>
+                </g>
+                <g class="reactor-counter-spin">
+                    <circle class="reactor-segments" cx="160" cy="160" r="58"></circle>
+                    <path class="reactor-ticks" d="M160 80v12m0 136v12M80 160h12m136 0h12m-184.6-56.6 8.5 8.5m96.2 96.2 8.5 8.5m0-113.2-8.5 8.5m-96.2 96.2-8.5 8.5"></path>
+                </g>
+                <circle class="reactor-core-glow" cx="160" cy="160" r="37"></circle>
+                <circle class="reactor-core" cx="160" cy="160" r="24"></circle>
+                <circle class="reactor-core-point" cx="160" cy="160" r="8"></circle>
+            </svg>
+            <span class="reactor-label">CORE // ONLINE</span>
+        </div>
         <div class="hero-content">
             <h1>
                 <span class="animate-word highlight">Hi,</span>
@@ -49,6 +91,12 @@
             <div class="hero-links">
                 <a href="#projects" class="btn">View Projects</a>
                 <a href="Athar-Sayed-Resume.pdf" download class="btn btn-outline">Download Resume</a>
+            </div>
+            <div class="hero-tools">
+                <button class="suit-toggle" type="button" data-suit-toggle aria-pressed="false" aria-label="Switch to Stealth suit theme">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    <span data-suit-label>MARK III MODE</span>
+                </button>
             </div>
             <div class="hero-stats" role="list" aria-label="Quick facts">
                 <div class="stat" role="listitem">
@@ -64,6 +112,7 @@
                     <div class="stat-label">Technologies</div>
                 </div>
             </div>
+        </div>
         </div>
         <div class="scroll-down">
             <a href="#about"><i class="fas fa-chevron-down"></i></a>
@@ -153,7 +202,7 @@
         <div class="projects-grid">
             <div class="project-card">
                 <div class="project-img">
-                    <img src="images\Der-Kurator Streamlit .png" alt="Der Kurator RAG System">
+                    <img src="images\Der-Kurator Streamlit .png" alt="Der Kurator RAG System" loading="lazy" decoding="async">
                 </div>
 
                 <div class="project-content">
@@ -179,7 +228,7 @@
 
             <div class="project-card">
                 <div class="project-img">
-                    <img src="images/Vigilix-Grafana.png" alt="Vigilix">
+                    <img src="images/Vigilix-Grafana.png" alt="Vigilix" loading="lazy" decoding="async">
                 </div>
                 <div class="project-content">
                     <h3>Vigilix: Network Intrusion Detection System</h3>
@@ -201,7 +250,7 @@
             </div>
             <div class="project-card">
                 <div class="project-img">
-                    <img src="images/Intellitube_project.png" alt="IntelliTube">
+                    <img src="images/Intellitube_project.png" alt="IntelliTube" loading="lazy" decoding="async">
                 </div>
                 <div class="project-content">
                     <h3>IntelliTube: AI Powered YouTube Insight Engine</h3>
@@ -224,7 +273,7 @@
             </div>
             <div class="project-card">
                 <div class="project-img">
-                    <img src="images/Script_Sense.png" alt="ScriptSense">
+                    <img src="images/Script_Sense.png" alt="ScriptSense" loading="lazy" decoding="async">
                 </div>
                 <div class="project-content">
                     <h3>ScriptSense: Personality Prediction</h3>
@@ -246,7 +295,7 @@
             </div>
             <div class="project-card">
                 <div class="project-img">
-                    <img src="images/Placement-Analysis.png" alt="Academic Dashboard">
+                    <img src="images/Placement-Analysis.png" alt="Academic Dashboard" loading="lazy" decoding="async">
                 </div>
                 <div class="project-content">
                     <h3>Academic Dashboard Mtech Students </h3>
@@ -268,7 +317,7 @@
             </div>
             <div class="project-card">
                 <div class="project-img">
-                    <img src="images/Streampulse.png" alt="StreamPulse Dashboard">
+                    <img src="images/Streampulse.png" alt="StreamPulse Dashboard" loading="lazy" decoding="async">
                 </div>
                 <div class="project-content">
                     <h3>StreamPulse : Real-Time E-Commerce Transactions Dashboard</h3>
@@ -534,7 +583,7 @@
         <div class="timeline-item">
             <div class="timeline-header">
                 <div class="role-company">
-                    <img src="images/Diebold_Nixdorf.png" alt="Diebold Nixdorf Logo" class="company-logo">
+                    <img src="images/Diebold_Nixdorf.png" alt="Diebold Nixdorf Logo" class="company-logo" loading="lazy" decoding="async">
                     <div class="role-text">
                         <h3 class="role-title">Gen-AI Intern</h3>
                         <span class="company-name">Diebold Nixdorf</span>
@@ -566,7 +615,7 @@
         <div class="timeline-item">
             <div class="timeline-header">
                 <div class="role-company">
-                    <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs Logo" class="company-logo">
+                    <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs Logo" class="company-logo" loading="lazy" decoding="async">
                     <div class="role-text">
                         <h3 class="role-title">Software Engineer</h3>
                         <span class="company-name">FortytwoLabs</span>
@@ -595,7 +644,7 @@
         <div class="timeline-item">
             <div class="timeline-header">
                 <div class="role-company">
-                    <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs Logo" class="company-logo">
+                    <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs Logo" class="company-logo" loading="lazy" decoding="async">
                     <div class="role-text">
                         <h3 class="role-title">Technical Intern</h3>
                         <span class="company-name">FortytwoLabs</span>
@@ -662,7 +711,7 @@
             </div>
             <div class="certification-card">
                 <div class="certification-icon">
-                    <img src="images/Oracle-Logo-1.png" alt="Oracle Logo" style="width: 140px; height: auto;">
+                    <img src="images/Oracle-Logo-1.png" alt="Oracle Logo" style="width: 140px; height: auto;" loading="lazy" decoding="async">
                 </div>
                 <h3>Oracle Cloud Infrastructure 2025 Certified AI Foundations Associate</h3>
                 <p>Oracle</p>
@@ -670,7 +719,7 @@
             <!-- NEW CERTIFICATION -->
             <div class="certification-card">
                 <div class="certification-icon">
-                    <img src="images/Oracle-Logo-1.png" alt="Oracle Logo" style="width: 140px; height: auto;">
+                    <img src="images/Oracle-Logo-1.png" alt="Oracle Logo" style="width: 140px; height: auto;" loading="lazy" decoding="async">
                 </div>
                 <h3>Oracle Cloud Infrastructure 2025 Certified Generative AI Professional</h3>
                 <p>Oracle</p>
@@ -731,6 +780,7 @@
         </div>
     </div>
 
+    <div class="hud-cursor" id="hud-cursor" aria-hidden="true"></div>
     <script src="js/scripts.js"></script>
     <!-- Debug helper: quick toggle handler to verify terminal toggle works locally -->
     <script>
@@ -748,5 +798,6 @@
             }
         })();
     </script>
+    <script src="js/hud-effects.js"></script>
 </body>
 </html>
