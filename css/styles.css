@@ -1279,6 +1279,20 @@ section h2 span::after {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
   padding: 1rem;
+  align-items: stretch;
+}
+
+.blog-card-link {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-card-link:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 4px;
 }
 
 .blog-card {
@@ -1286,6 +1300,17 @@ section h2 span::after {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.blog-card-link .blog-card {
+  height: 100%;
+}
+
+.blog-card .title,
+.blog-card .excerpt {
+  overflow-wrap: anywhere;
 }
 
 .blog-card .title {
@@ -1321,6 +1346,20 @@ section h2 span::after {
   margin-bottom: 0.6rem;
 }
 
+.blog-thumb-frame {
+  width: 100%;
+  height: 140px;
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+
+.blog-thumb-frame .blog-thumb,
+.blog-thumb-frame .blog-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
 /* Placeholder thumbnail (font icon) */
 .blog-thumb-placeholder {
   width: 100%;
@@ -1331,6 +1370,11 @@ section h2 span::after {
   background: linear-gradient(180deg, rgba(44,95,143,0.04), rgba(192,108,132,0.02));
   border-radius: 8px;
   margin-bottom: 0.6rem;
+}
+
+.blog-thumb-placeholder .fa-medium {
+  color: var(--primary-color);
+  font-size: 2rem;
 }
 
 .blog-card .meta { margin-bottom: 0.25rem; }

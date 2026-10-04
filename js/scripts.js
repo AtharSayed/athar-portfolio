@@ -1147,12 +1147,13 @@ function safeQueryAll(selector) {
 
 // ---------- Blog fetch & render (Medium RSS) ----------
 (async function initMediumBlogSection(){
-  const BLOG_USERNAME = 'YOUR_MEDIUM_USERNAME'; // <-- set this to your Medium username (no @)
+  const BLOG_USERNAME = 'sayedathar242';
   const MAX_POSTS = 6;
   const blogGrid = document.getElementById('blog-grid');
   const fallback = document.getElementById('blog-fallback');
 
-  if (!blogGrid) return;
+  if (!blogGrid || !BLOG_USERNAME.trim()) return;
+  const username = BLOG_USERNAME.trim().replace(/^@/, '');
 
   // Helpers
   function createCard({title, link, pubDate, excerpt, thumbnail}) {
@@ -1165,13 +1166,21 @@ function safeQueryAll(selector) {
     const card = document.createElement('article');
     card.className = 'blog-card';
 
+    const thumbnailFrame = document.createElement('div');
+    thumbnailFrame.className = 'blog-thumb-frame';
     if (thumbnail) {
       const img = document.createElement('img');
       img.src = thumbnail;
       img.alt = title;
       img.className = 'blog-thumb';
-      card.appendChild(img);
+      img.addEventListener('error', () => {
+        thumbnailFrame.replaceWith(createThumbnailPlaceholder());
+      }, {once: true});
+      thumbnailFrame.appendChild(img);
+    } else {
+      thumbnailFrame.appendChild(createThumbnailPlaceholder());
     }
+    card.appendChild(thumbnailFrame);
 
     const titleEl = document.createElement('div');
     titleEl.className = 'title';
@@ -1179,11 +1188,14 @@ function safeQueryAll(selector) {
 
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.textContent = new Date(pubDate).toLocaleDateString();
+    const published = pubDate ? new Date(pubDate) : null;
+    meta.textContent = published && !Number.isNaN(published.getTime())
+      ? published.toLocaleDateString()
+      : 'Medium article';
 
     const excerptEl = document.createElement('p');
     excerptEl.className = 'excerpt';
-    excerptEl.innerHTML = excerpt || '';
+    excerptEl.textContent = excerpt || '';
 
     card.appendChild(titleEl);
     card.appendChild(meta);
@@ -1191,6 +1203,66 @@ function safeQueryAll(selector) {
 
     a.appendChild(card);
     return a;
+  }
+
+  function createThumbnailPlaceholder() {
+    const placeholder = document.createElement('div');
+    placeholder.className = 'blog-thumb-placeholder';
+    placeholder.setAttribute('aria-hidden', 'true');
+
+    const icon = document.createElement('i');
+    icon.className = 'fab fa-medium';
+    placeholder.appendChild(icon);
+    return placeholder;
+  }
+
+  function createExcerpt(...values) {
+    const text = values.map(stripHtml).find(Boolean) || '';
+    if (text.length <= 220) return text;
+    return `${text.slice(0, 217).trimEnd()}...`;
+  }
+
+  function getThumbnail(html) {
+    const parsed = new DOMParser().parseFromString(html || '', 'text/html');
+    const src = parsed.querySelector('img')?.getAttribute('src');
+    if (!src) return null;
+
+    try {
+      const url = new URL(src, 'https://medium.com');
+      return url.protocol === 'https:' ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function renderItems(items) {
+    const cards = items
+      .map(item => {
+        const link = item.link || '';
+        try {
+          if (new URL(link).protocol !== 'https:') return null;
+        } catch {
+          return null;
+        }
+
+        const excerpt = createExcerpt(item.description, item.content);
+        const card = createCard({
+          title: stripHtml(item.title) || 'Untitled',
+          link,
+          pubDate: item.pubDate || '',
+          excerpt,
+          thumbnail: item.thumbnail || getThumbnail(item.content) || getThumbnail(item.description)
+        });
+        return card;
+      })
+      .filter(Boolean)
+      .slice(0, MAX_POSTS);
+
+    if (!cards.length) return false;
+
+    blogGrid.replaceChildren(...cards);
+    if (fallback) fallback.hidden = true;
+    return true;
   }
 
   // Strategy: try rss2json API (simple); fallback to AllOrigins + parse RSS
@@ -1214,50 +1286,40 @@ function safeQueryAll(selector) {
   }
 
   try {
-    const rssUrl = `https://medium.com/feed/@${BLOG_USERNAME}`; // Medium RSS
+    const rssUrl = `https://medium.com/feed/@${username}`;
     // Try rss2json first
-    let data = await fetchViaRss2Json(rssUrl);
+    const data = await fetchViaRss2Json(rssUrl);
 
-    if (data && data.items) {
-      // Render items
-      blogGrid.innerHTML = '';
-      data.items.slice(0, MAX_POSTS).forEach(item => {
-        const thumbnail = item.thumbnail || parseThumbnailFromContent(item.content);
-        const card = createCard({
-          title: item.title,
-          link: item.link,
-          pubDate: item.pubDate || item.pubDate,
-          excerpt: item.description || stripHtml(item.content).slice(0, 220) + '...',
-          thumbnail
-        });
-        blogGrid.appendChild(card);
-      });
-      return;
+    if (!Array.isArray(data?.items) || !renderItems(data.items)) {
+      throw new Error('rss2json returned no usable items');
     }
-    throw new Error('rss2json returned no items');
   } catch (e) {
     // fallback path: use AllOrigins + parse RSS manually
     try {
-      const rssUrl = `https://medium.com/feed/@${BLOG_USERNAME}`;
+      const rssUrl = `https://medium.com/feed/@${username}`;
       const xml = await fetchViaAllOrigins(rssUrl);
 
       // parse item nodes
       const items = Array.from(xml.querySelectorAll('item')).slice(0, MAX_POSTS);
       if (!items.length) throw new Error('no items parsed');
 
-      blogGrid.innerHTML = '';
-      items.forEach(item => {
+      const parsedItems = items.map(item => {
         const title = item.querySelector('title')?.textContent || 'Untitled';
-        const link = item.querySelector('link')?.textContent || '#';
+        const link = item.querySelector('link')?.textContent || '';
         const pubDate = item.querySelector('pubDate')?.textContent || '';
         // some RSS put content:encoded with HTML
         const contentNode = item.querySelector('content\\:encoded') || item.querySelector('description');
         const content = contentNode ? contentNode.textContent : '';
-        const excerpt = stripHtml(content).slice(0, 220) + '...';
-        const thumbnail = parseThumbnailFromHtml(content);
-        const card = createCard({ title, link, pubDate, excerpt, thumbnail });
-        blogGrid.appendChild(card);
+        return {
+          title,
+          link,
+          pubDate,
+          description: content,
+          content,
+          thumbnail: getThumbnail(content)
+        };
       });
+      if (!renderItems(parsedItems)) throw new Error('no usable items parsed');
       return;
     } catch (err) {
       console.warn('Blog fetch failed:', e, err);
@@ -1269,23 +1331,8 @@ function safeQueryAll(selector) {
 
   // small helpers
   function stripHtml(html) {
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html || '';
-    return tmp.textContent || tmp.innerText || '';
-  }
-
-  function parseThumbnailFromHtml(html) {
-    try {
-      const div = document.createElement('div');
-      div.innerHTML = html || '';
-      const img = div.querySelector('img');
-      return img ? img.src : null;
-    } catch (e) { return null; }
-  }
-
-  function parseThumbnailFromContent(content) {
-    // rss2json sometimes returns `content` with <img> tags
-    return parseThumbnailFromHtml(content);
+    const parsed = new DOMParser().parseFromString(html || '', 'text/html');
+    return (parsed.body.textContent || '').replace(/\s+/g, ' ').trim();
   }
 })();
 

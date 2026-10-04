@@ -583,39 +583,87 @@ nav ul li a:focus-visible {
   text-align: left;
 }
 
+.skills-container {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  align-items: stretch;
+}
+
+.skills .skill-category {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+}
+
+.skill-category-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 3.25rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.14);
+}
+
+.skills .skill-icon {
+  display: grid;
+  flex: 0 0 2.65rem;
+  width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  margin: 0;
+  border: 1px solid rgba(244, 185, 66, 0.24);
+  background: rgba(244, 185, 66, 0.06);
+  font-size: 1.15rem;
+}
+
 .skill-icon,
 .achievement-icon,
 .publication-icon {
   color: var(--hud-gold);
 }
 
-.skill-category h3 {
+.skills .skill-category h3 {
+  min-width: 0;
+  margin: 0;
   color: var(--hud-cyan);
-  font-size: 1.15rem;
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  line-height: 1.3;
 }
 
-.skill-category ul {
-  display: grid;
-  gap: 0.35rem;
+.skills .skill-category ul {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.skill-category li {
-  position: relative;
-  padding: 0.45rem 0 0.45rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+.skills .skill-category li {
+  position: static;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(0, 229, 255, 0.14);
+  background: rgba(0, 229, 255, 0.035);
   color: var(--hud-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
 }
 
-.skill-category li::before {
-  position: absolute;
-  top: 1.08em;
-  left: 0;
-  width: 5px;
-  height: 5px;
-  content: '';
-  border: 1px solid var(--hud-red);
-  background: var(--hud-gold);
-  box-shadow: 0 0 8px rgba(244, 185, 66, 0.35);
+.skills .skill-category li::before {
+  display: none;
+}
+
+.skills .skill-category li:hover {
+  border-color: rgba(244, 185, 66, 0.42);
+  background: rgba(244, 185, 66, 0.08);
+  color: var(--hud-text);
 }
 
 .skill-category::after {
