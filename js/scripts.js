@@ -1098,6 +1098,53 @@ function safeQueryAll(selector) {
         return [];
     }
 }
+// =============================================
+// CERTIFICATE MODAL
+// =============================================
+
+(function initCertificateModal() {
+    const modal = document.getElementById('certificate-modal');
+    const modalImage = modal?.querySelector('.certificate-modal-image');
+    const viewButtons = document.querySelectorAll('.view-certificate-btn');
+    const closeButtons = modal?.querySelectorAll('[data-close-modal]');
+
+    if (!modal || !modalImage || !viewButtons.length) return;
+
+    function openModal(imageSrc) {
+        modalImage.src = imageSrc;
+        modal.hidden = false;
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        document.body.style.overflow = '';
+    }
+
+    // Open certificate
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const imageSrc = this.getAttribute('data-certificate-src');
+
+            if (imageSrc) {
+                openModal(imageSrc);
+            }
+        });
+    });
+
+    // Close certificate
+    closeButtons?.forEach(button => {
+        button.addEventListener('click', closeModal);
+    });
+
+    // Close with Escape
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.hidden) {
+            closeModal();
+        }
+    });
+})();
+
 // ---------- Blog fetch & render (Medium RSS) ----------
 (async function initMediumBlogSection(){
   const BLOG_USERNAME = 'YOUR_MEDIUM_USERNAME'; // <-- set this to your Medium username (no @)
