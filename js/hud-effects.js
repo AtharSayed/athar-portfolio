@@ -77,6 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const cursor = document.getElementById('hud-cursor');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const summaryCards = document.querySelectorAll('#experience .experience-summary .summary-stat');
+
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    summaryCards.forEach(card => card.classList.add('is-visible'));
+  } else if (summaryCards.length) {
+    summaryCards.forEach(card => card.classList.add('is-animated'));
+    const summaryObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.2, rootMargin: '0px 0px -6% 0px' });
+
+    summaryCards.forEach(card => summaryObserver.observe(card));
+  }
 
   if (cursor && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
     let cursorFrame = 0;

@@ -724,6 +724,374 @@ nav ul li a:focus-visible {
   border-radius: 0;
 }
 
+.summary-stat strong,
+.experience-eyebrow {
+  color: var(--hud-gold);
+}
+
+.summary-stat {
+  border-color: var(--hud-line);
+  background: var(--hud-glass);
+}
+
+.summary-stat__eyebrow,
+.summary-stat__context {
+  color: var(--hud-muted);
+}
+
+.summary-stat__label { color: var(--hud-muted); }
+
+.pipeline-visual__stage,
+.sources-visual__sources > span,
+.sources-visual__index,
+.scale-visual__flow > span,
+.cpp-visual__platforms > span {
+  border-color: var(--hud-line);
+  color: var(--hud-text);
+  background: var(--hud-surface);
+}
+
+.sources-visual__line { stroke: var(--hud-cyan); }
+
+.scale-visual__before,
+.incremental-visual__tile.is-reindexed,
+.incremental-visual__key--reindexed,
+.cpp-visual__markers > i {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+  background: var(--hud-gold);
+}
+
+.pipeline-visual__stage::before {
+  border-color: var(--hud-gold);
+  color: var(--hud-bg);
+  background: var(--hud-gold);
+}
+
+.scale-visual__before {
+  border-color: var(--hud-gold);
+  color: var(--hud-bg);
+  background: var(--hud-gold);
+}
+
+.incremental-visual__tile,
+.incremental-visual__key {
+  border-color: var(--hud-line);
+  background: var(--hud-surface);
+}
+
+.scale-visual__caption,
+.scale-visual__flow > span,
+.sources-visual__sources > span {
+  color: var(--hud-text);
+}
+
+.incremental-visual__note,
+.incremental-visual__legend,
+.cpp-visual__markers > span,
+.scale-visual__features > span {
+  color: var(--hud-muted);
+}
+
+.scale-visual__features > span,
+.sources-visual__sources > span,
+.sources-visual__index {
+  border-color: var(--hud-line);
+}
+
+.sources-visual__index {
+  border-color: var(--hud-gold);
+  color: var(--hud-gold);
+}
+
+.sources-visual__glow { stroke: var(--hud-cyan); }
+
+.incremental-visual__tile.is-reindexed {
+  box-shadow: 0 0 8px var(--hud-gold);
+}
+
+.incremental-visual__key--reindexed { border-color: var(--hud-gold); }
+
+.cpp-visual__platforms > span {
+  border-color: var(--hud-line);
+  color: var(--hud-cyan);
+}
+
+.cpp-visual__markers > i {
+  border: 0;
+  box-shadow: 0 0 8px var(--hud-gold);
+}
+
+.summary-stat--cpp {
+  border-top-color: var(--hud-gold);
+}
+
+.summary-stat.is-animated:not(.is-visible) .incremental-visual__tile.is-reindexed {
+  border-color: var(--hud-line);
+  background: var(--hud-surface);
+  box-shadow: none;
+}
+
+.pipeline-visual::after {
+  background: linear-gradient(90deg, transparent, var(--hud-cyan), transparent);
+}
+
+.summary-stat--pipeline.is-visible .pipeline-visual::after {
+  opacity: 0.25;
+}
+
+.summary-stat__context,
+.summary-stat__label {
+  color: var(--hud-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-stat.is-animated:not(.is-visible) .incremental-visual__tile.is-reindexed {
+    border-color: var(--hud-gold);
+    background: var(--hud-gold);
+    box-shadow: 0 0 8px var(--hud-gold);
+  }
+}
+
+.experience-eyebrow span { color: var(--hud-cyan); }
+
+.timeline-item {
+  clip-path: none;
+  border-color: rgba(244, 185, 66, 0.16);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(18, 22, 29, 0.98), rgba(9, 11, 16, 0.98));
+}
+
+.timeline-item:hover {
+  border-color: rgba(244, 185, 66, 0.38);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.3), 0 0 24px rgba(244, 185, 66, 0.06);
+}
+
+.timeline-item::before {
+  border: 2px solid var(--hud-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(244, 185, 66, 0.1);
+}
+
+.timeline-item .timeline-header {
+  padding: 0 0 1.2rem;
+  border: 0;
+  border-bottom: 1px solid rgba(244, 185, 66, 0.14);
+  border-radius: 0;
+  background: transparent;
+}
+
+.company-logo {
+  border-color: rgba(244, 185, 66, 0.22);
+  border-radius: 12px;
+}
+
+.timeline-item .date {
+  color: var(--hud-gold);
+  border-color: rgba(244, 185, 66, 0.2);
+  background: rgba(244, 185, 66, 0.055);
+}
+
+.experience-specialties li {
+  color: var(--hud-muted);
+  border-color: rgba(0, 229, 255, 0.16);
+  background: rgba(0, 229, 255, 0.035);
+}
+
+.contributions-count {
+  color: var(--hud-muted);
+}
+
+.contribution-entry {
+  border-color: rgba(0, 229, 255, 0.12);
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.018);
+}
+
+.contribution-entry:hover {
+  border-color: rgba(244, 185, 66, 0.34);
+  background: rgba(244, 185, 66, 0.035);
+}
+
+.contribution-index {
+  color: var(--hud-gold);
+}
+
+.contribution-entry h5 {
+  color: var(--hud-text);
+}
+
+.contribution-entry p {
+  color: var(--hud-muted);
+}
+
+.timeline-item .download-btn {
+  border-color: rgba(244, 185, 66, 0.2);
+  background: rgba(244, 185, 66, 0.055);
+}
+
+.timeline-item .download-btn:hover {
+  color: var(--hud-bg);
+  background: var(--hud-gold);
+}
+
+/* Tighten the experience cards and align role actions with the date. */
+#experience .timeline-item {
+  padding: 1.15rem;
+  margin-bottom: 0.9rem;
+  border-radius: 12px;
+}
+
+#experience .timeline-item .timeline-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 0 0 0.85rem;
+  padding: 0 0 0.8rem;
+}
+
+#experience .role-company {
+  min-width: 0;
+  gap: 0.75rem;
+}
+
+#experience .company-logo-frame {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  overflow: hidden;
+  border: 1px solid rgba(244, 185, 66, 0.17);
+  border-radius: 9px;
+}
+
+#experience .company-logo-frame--light {
+  background: #e4e9ef;
+}
+
+#experience .company-logo-frame--dark {
+  background: rgba(0, 229, 255, 0.035);
+}
+
+#experience .company-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  object-fit: contain;
+}
+
+#experience .company-logo-frame--light .company-logo {
+  mix-blend-mode: multiply;
+}
+
+#experience .company-logo-frame--dark .company-logo {
+  mix-blend-mode: screen;
+}
+
+#experience .role-text { gap: 0.12rem; }
+
+#experience .timeline-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+#experience .date {
+  justify-self: end;
+  padding: 0.32rem 0.6rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+#experience .download-placeholder {
+  display: block;
+  width: 82px;
+  height: 30px;
+}
+
+#experience .timeline-item .download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 82px;
+  height: 30px;
+  padding: 0 0.45rem;
+  border-radius: 5px;
+  color: var(--hud-gold);
+  font-size: 0.68rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+#experience .timeline-item > .experience-toolkit,
+#experience .timeline-item > .contributions {
+  position: relative;
+  padding: 0;
+  scroll-margin-top: 0;
+}
+
+#experience .experience-toolkit { margin-bottom: 0.9rem; }
+
+#experience .experience-toolkit .impact-label,
+#experience .contributions-heading .impact-label {
+  margin-bottom: 0.45rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.11em;
+}
+
+#experience .experience-specialties { gap: 0.28rem; }
+
+#experience .experience-specialties li {
+  padding: 0.2rem 0.42rem;
+  font-size: 0.64rem;
+  line-height: 1.25;
+}
+
+#experience .contributions-heading { margin-bottom: 0.55rem; }
+
+#experience .contribution-list { gap: 0.45rem; }
+
+#experience .contribution-entry {
+  grid-template-columns: 1.35rem minmax(0, 1fr);
+  gap: 0.45rem;
+  padding: 0.65rem;
+}
+
+#experience .contribution-entry h5 {
+  margin-bottom: 0.2rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+#experience .contribution-entry p {
+  font-size: 0.78rem;
+  line-height: 1.48;
+}
+
+@media (max-width: 700px) {
+  #experience .timeline-item { padding: 0.9rem; }
+
+  #experience .timeline-item .timeline-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  #experience .timeline-meta { width: 100%; }
+  #experience .date { justify-self: start; white-space: normal; }
+  #experience .contribution-list { grid-template-columns: 1fr; }
+}
+
 .publication-card {
   border-left: 2px solid var(--hud-red);
 }

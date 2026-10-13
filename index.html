@@ -637,73 +637,207 @@
 
 <section id="experience" class="experience">
     <h2><span>Work Experience</span></h2>
+    <p class="experience-intro">
+        <span class="experience-eyebrow">Career snapshot <span aria-hidden="true">//</span> 2023–2026</span>
+        <span>Building dependable AI systems and production software, from retrieval pipelines to cross-platform releases.</span>
+    </p>
+    <div class="experience-summary" role="group" aria-label="Career impact highlights">
+        <article class="summary-stat summary-stat--pipeline">
+            <span class="summary-stat__eyebrow">End-to-end pipeline</span>
+            <strong>7-stage</strong>
+            <span class="summary-stat__label">Confluence knowledge indexing, automated on Jenkins</span>
+            <div class="pipeline-visual" role="img" aria-label="Seven-stage flow: Export, Preprocess, Embed, FAISS Index, Docker Validate, Nexus GAV, Azure Blob">
+                <span class="pipeline-visual__stage">Export</span>
+                <span class="pipeline-visual__stage">Preprocess</span>
+                <span class="pipeline-visual__stage">Embed</span>
+                <span class="pipeline-visual__stage">FAISS Index</span>
+                <span class="pipeline-visual__stage">Docker Validate</span>
+                <span class="pipeline-visual__stage">Nexus (GAV)</span>
+                <span class="pipeline-visual__stage">Azure Blob</span>
+            </div>
+            <span class="summary-stat__context">Replaced a local GPU embedding model with Azure AI Foundry serverless embeddings; no dedicated compute</span>
+        </article>
+        <article class="summary-stat summary-stat--scale">
+            <span class="summary-stat__eyebrow">Scaling a data app</span>
+            <strong>~38K records</strong>
+            <span class="summary-stat__label">Streamlit app rebuilt as a React + Express dashboard</span>
+            <div class="scale-visual" role="img" aria-label="Before: all ~38K records in memory. After: Browser to Express API to cache to PostgreSQL, using pagination, LRU and TTL cache, request coalescing, and connection pooling.">
+                <div class="scale-visual__panel scale-visual__panel--before">
+                    <span class="scale-visual__caption">BEFORE</span>
+                    <div class="scale-visual__before">All ~38K records in memory</div>
+                </div>
+                <div class="scale-visual__panel scale-visual__panel--after">
+                    <span class="scale-visual__caption">AFTER</span>
+                    <div class="scale-visual__flow">
+                        <span>Browser</span><span>Express API</span><span>Cache</span><span>PostgreSQL</span>
+                    </div>
+                    <div class="scale-visual__features">
+                        <span>Pagination</span><span>LRU/TTL cache</span><span>Request coalescing</span><span>Connection pooling</span>
+                    </div>
+                </div>
+            </div>
+            <span class="summary-stat__context">On-demand API retrieval with server-side pagination, filtering, sorting and search</span>
+        </article>
+        <article class="summary-stat summary-stat--sources">
+            <span class="summary-stat__eyebrow">Enterprise integrations</span>
+            <strong>3 sources</strong>
+            <span class="summary-stat__label">knowledge systems indexed for enterprise chatbots</span>
+            <div class="sources-visual" role="img" aria-label="Confluence, Jira Service Desk, and HR knowledge connect to a central FAISS index.">
+                <svg class="sources-visual__connectors" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="sources-visual__line" d="M54 16 H66 M54 50 H66 M54 84 H66 M66 16 V84 M66 50 H100"></path>
+                    <path class="sources-visual__glow" pathLength="100" d="M54 16 H66 M54 50 H66 M54 84 H66 M66 16 V84 M66 50 H100"></path>
+                </svg>
+                <div class="sources-visual__sources" aria-hidden="true">
+                    <span>Confluence</span>
+                    <span>Jira Service Desk</span>
+                    <span>HR knowledge</span>
+                </div>
+                <span class="sources-visual__index" aria-hidden="true">FAISS index</span>
+            </div>
+            <span class="summary-stat__context">Jira Service Desk supports open, closed, and combined ticket modes</span>
+        </article>
+        <article class="summary-stat summary-stat--incremental">
+            <span class="summary-stat__eyebrow">Incremental indexing</span>
+            <strong>Incremental</strong>
+            <span class="summary-stat__label">full and incremental builds from one pipeline</span>
+            <div class="incremental-visual" role="img" aria-label="Illustrative 6 by 4 content grid: three tiles re-indexed, with the remaining tiles skipped as unchanged.">
+                <span class="incremental-visual__note">illustrative</span>
+                <div class="incremental-visual__grid" aria-hidden="true">
+                    <span class="incremental-visual__tile is-reindexed"></span><span class="incremental-visual__tile is-reindexed"></span><span class="incremental-visual__tile is-reindexed"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span>
+                    <span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span>
+                    <span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span>
+                    <span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span><span class="incremental-visual__tile"></span>
+                </div>
+                <div class="incremental-visual__legend"><span><i class="incremental-visual__key incremental-visual__key--reindexed"></i>Re-indexed</span><span><i class="incremental-visual__key"></i>Skipped (unchanged)</span></div>
+            </div>
+            <span class="summary-stat__context">Content-hash and timestamp change detection avoids reprocessing unchanged content</span>
+        </article>
+        <article class="summary-stat summary-stat--cpp">
+            <span class="summary-stat__eyebrow">Software delivery</span>
+            <div class="cpp-visual__metric">
+                <strong>6+</strong>
+                <span class="summary-stat__label">production C++ libraries released</span>
+            </div>
+            <div class="cpp-visual" role="img" aria-label="Six or more illuminated library markers, plus releases for Linux, Windows, and macOS">
+                <div class="cpp-visual__platforms"><span>Linux</span><span>Windows</span><span>macOS</span></div>
+                <div class="cpp-visual__markers"><i></i><i></i><i></i><i></i><i></i><i></i><span>+</span></div>
+            </div>
+            <span class="summary-stat__context">Cross-platform build and release; Prometheus and Grafana monitoring, OpenTelemetry tracing PoC</span>
+        </article>
+    </div>
     <div class="timeline container">
-        <!-- Most recent – current role -->
-        <div class="timeline-item">
+        <article class="timeline-item">
             <div class="timeline-header">
                 <div class="role-company">
-                    <img src="images/Diebold_Nixdorf.png" alt="Diebold Nixdorf Logo" class="company-logo" loading="lazy" decoding="async">
+                    <span class="company-logo-frame company-logo-frame--light">
+                        <img src="images/Diebold_Nixdorf.png" alt="Diebold Nixdorf logo" class="company-logo" loading="lazy" decoding="async">
+                    </span>
                     <div class="role-text">
                         <h3 class="role-title">Gen AI Intern</h3>
                         <span class="company-name">Diebold Nixdorf</span>
                     </div>
                 </div>
                 <div class="timeline-meta">
-                    <span class="date">February 2026 — September 2026</span>
+                    <span class="date">February 2026 — September 2026 (7 months)</span>
+                    <span class="download-placeholder" aria-hidden="true"></span>
                 </div>
             </div>
-            <ul>
-                    <li>Contributing to enterprise-scale Generative AI solutions by enhancing an internal LLM-powered chatbot through prompt engineering, response evaluation, and output optimization.</li>
-                    <li>Optimizing the Retrieval-Augmented Generation (RAG) pipeline by refactoring preprocessing modules, cleaning legacy code, and restructuring functions for improved modularity and maintainability.</li>
-                    <li>Conducting prompt experimentation and LLM output evaluation to analyze model behavior, improve contextual responses, and reduce hallucinations.</li>
-                    <li>Improving LLM workflow efficiency by optimizing context handling and ensuring response consistency across the chatbot system.</li>
-                    <li>Built and optimized Dockerized deployments for AI-powered chatbot services, reducing container size and improving deployment efficiency.</li>
-                    <li>Developed end-to-end Jenkins CI/CD pipelines for automated Docker image build, validation, and deployment to Nexus Repository.</li>
-                    <li>Implemented Python code obfuscation and container security measures using PyArmor and compiled bytecode to protect application source code.</li>
-                    <li>Designed and developed scalable Confluence-to-Azure data ingestion and indexing pipelines for enterprise knowledge retrieval systems.</li>
-                    <li>Built incremental indexing frameworks using content hashing and timestamp-based change detection, significantly reducing processing time and compute costs.</li>
-                    <li>Automated end-to-end knowledge base generation workflows through Jenkins orchestration, supporting both full and incremental indexing modes.</li>
-                    <li>Built a preprocessing pipeline for HR knowledge sources, improving ingestion, retrieval, and response quality for the enterprise HR chatbot.</li>
-                    <li>Set up the Jenkins production pipeline for JSD (Jira Service Desk) tickets and resolved Hybrid Worker execution issues by provisioning a new Hybrid Worker within the existing Azure Automation Account and Resource Group, configuring the VM with required dependencies, and integrating it with Runbook execution. </li>
-                    <li>Developed a Jenkins CI/CD pipeline to automate the transfer of generated indexes from Nexus Repository to Azure Blob Storage, enabling centralized, reliable, and automated index storage.</li>
-                    <li>Optimized the index generation pipeline by migrating from a locally hosted multilingual E5-large embedding model running on a GPU VM to Azure AI Foundry’s serverless embedding model, enabling CPU-based execution, reducing GPU infrastructure costs, and improving overall index generation efficiency.</li>
+            <section class="experience-toolkit" aria-label="Tools and expertise used in this role">
+                <h4 class="impact-label">Core tools &amp; expertise</h4>
+                <ul class="experience-specialties">
+                    <li>Python</li>
+                    <li>LLMs &amp; RAG</li>
+                    <li>Docker</li>
+                    <li>PyArmor</li>
+                    <li>Jenkins</li>
+                    <li>Nexus Repository</li>
+                    <li>Confluence</li>
+                    <li>Azure AI Foundry</li>
+                    <li>Azure Blob Storage</li>
+                    <li>Azure Automation</li>
+                    <li>Jira Service Desk</li>
+                    <li>E5-large embeddings</li>
+                    <li>FAISS</li>
+                    <li>React</li>
+                    <li>Express</li>
+                    <li>PostgreSQL</li>
                 </ul>
-        </div>
+            </section>
+            <section class="contributions" aria-label="Contributions and outcomes">
+                <div class="contributions-heading"><h4 class="impact-label">Contributions &amp; outcomes</h4><span class="contributions-count">10 contributions</span></div>
+                <ol class="contribution-list">
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">01</span><div><h5>Improved enterprise chatbot answer quality</h5><p>Ran prompt experiments and LLM output evaluation, and optimized context handling, to make answers more contextual and consistent and to reduce hallucinations. Built a preprocessing pipeline for HR knowledge sources to improve ingestion and retrieval for the HR chatbot.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">02</span><div><h5>Built an end-to-end Confluence knowledge-indexing pipeline</h5><p>Re-engineered ingestion so export, preprocessing, embedding generation, and FAISS index creation run as a single pipeline directly on Jenkins agents, eliminating dedicated compute infrastructure. Docker validation, timestamped versioning, and GAV-based publishing to Nexus are built in.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">03</span><div><h5>Made indexing incremental to cut reprocessing</h5><p>Added content-hash and timestamp-based change detection so full and incremental builds both run from the same pipeline. Unchanged content is no longer reprocessed, reducing processing time and compute costs.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">04</span><div><h5>Removed the GPU dependency from embedding generation</h5><p>Replaced the locally hosted E5-large model (previously on a GPU VM) with Azure AI Foundry's serverless embedding model, so embeddings are generated through a cloud API inside the Jenkins pipeline. This removed the GPU infrastructure and reduced its cost.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">05</span><div><h5>Designed a configurable FAISS indexing architecture</h5><p>Built a reusable indexing pipeline supporting incremental updates, multiple agent modes, and dynamic raw-index selection, so different indexing strategies run through configuration instead of separate code paths.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">06</span><div><h5>Delivered production Jira Service Desk indexing pipelines</h5><p>Built Jenkins pipelines that index tickets in open, closed, or combined modes, with separate data and KB-summary handling and resilience to empty exports. Fixed issues across both production and non-production workflows.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">07</span><div><h5>Restored production runbook execution on Azure</h5><p>Resolved Hybrid Worker failures by provisioning a new worker in the existing Azure Automation Account and Resource Group, configuring its VM dependencies, and integrating it with runbook execution. Validated the automated pipeline run end to end.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">08</span><div><h5>Automated index delivery to centralized storage</h5><p>Built a Jenkins pipeline that transfers generated indexes from Nexus Repository to Azure Blob Storage automatically, giving the team a single, reliable location for index storage.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">09</span><div><h5>Rebuilt a chatbot analytics app to scale</h5><p>Re-engineered a Streamlit app into a React + Express dashboard, replacing in-memory loading of ~38K PostgreSQL records with on-demand API retrieval. Added server-side pagination, filtering, sorting and search, LRU/TTL caching, request coalescing, and connection pooling.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">10</span><div><h5>Shipped lightweight, protected container images</h5><p>Optimized Docker images for the AI-Assist Config Agent using lightweight Red Hat-based packages and minimal dependencies, reducing container size. Protected proprietary Python code for client distribution with PyArmor obfuscation and compiled .pyc files.</p></div></li>
+                </ol>
+            </section>
+        </article>
 
-        <!-- Previous full-time role -->
-        <div class="timeline-item">
+        <article class="timeline-item">
             <div class="timeline-header">
                 <div class="role-company">
-                    <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs Logo" class="company-logo" loading="lazy" decoding="async">
+                    <span class="company-logo-frame company-logo-frame--dark">
+                        <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs logo" class="company-logo" loading="lazy" decoding="async">
+                    </span>
                     <div class="role-text">
                         <h3 class="role-title">Software Engineer</h3>
                         <span class="company-name">FortytwoLabs</span>
                     </div>
                 </div>
                 <div class="timeline-meta">
-                    <span class="date">June 2023 — June 2024 (1 year 1 month)</span>
-                    <a href="/images/SoftwareEng-ExpLetter.pdf" download class="download-btn" title="Download Experience Letter">
-                        <i class="fas fa-download"></i>
+                    <span class="date">June 2023 — July 2024 (1 year 1 month)</span>
+                    <a href="/images/SoftwareEng-ExpLetter.pdf" download class="download-btn" aria-label="Download Software Engineer experience letter" title="Download Experience Letter">
+                        <i class="fas fa-download" aria-hidden="true"></i><span>Letter</span>
                     </a>
                 </div>
             </div>
-            <ul>
-                <li>Managed build &amp; release processes for 6+ production C++ libraries, ensuring stable cross-platform deployment (Linux, Windows, macOS).</li>
-                <li>Implemented cryptographic modules, including policy signature generation and verification, to enhance application security and improve cryptographic processing efficiency.</li>
-                <li>Developed and maintained Makefile-based build scripts to automate compilation, dependency management, and packaging for Linux environments.</li>
-                <li>Implemented application monitoring using Prometheus and developed Grafana dashboards to visualize application health, resource utilization, and operational metrics.</li>
-                <li>Conducted a Proof of Concept (PoC) using OpenTelemetry to evaluate distributed tracing capabilities and improve observability across application workflows.</li>
-                <li>Monitored application deployments and pod health on Red Hat OpenShift, assisting in troubleshooting containerized workloads and ensuring application availability.</li>
-                <li>Utilized Dynatrace to monitor application performance, analyze system metrics, and assist in identifying performance bottlenecks and operational issues.</li>
-                <li>Performed Android application debugging and unit test validation using ADB Shell, executing test cases on physical devices and troubleshooting runtime issues.</li>
-            </ul>
-        </div>
+            <section class="experience-toolkit" aria-label="Tools and expertise used in this role">
+                <h4 class="impact-label">Core tools &amp; expertise</h4>
+                <ul class="experience-specialties">
+                    <li>C++</li>
+                    <li>Makefiles</li>
+                    <li>Linux</li>
+                    <li>Windows</li>
+                    <li>macOS</li>
+                    <li>Prometheus</li>
+                    <li>Grafana</li>
+                    <li>OpenTelemetry</li>
+                    <li>Red Hat OpenShift</li>
+                    <li>Dynatrace</li>
+                    <li>Android</li>
+                    <li>ADB Shell</li>
+                    <li>Cross-platform release engineering</li>
+                    <li>Digital signatures</li>
+                </ul>
+            </section>
+            <section class="contributions" aria-label="Contributions and outcomes">
+                <div class="contributions-heading"><h4 class="impact-label">Contributions &amp; outcomes</h4><span class="contributions-count">8 contributions</span></div>
+                <ol class="contribution-list">
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">01</span><div><h5>Delivered releases for 6+ production C++ libraries</h5><p>Managed build and release processes to support stable deployment across Linux, Windows, and macOS.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">02</span><div><h5>Strengthened application-level cryptographic controls</h5><p>Implemented policy signature generation and verification modules to enhance application security and improve cryptographic processing efficiency.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">03</span><div><h5>Automated Linux compilation and packaging</h5><p>Developed and maintained Makefile-based build scripts for compilation, dependency management, and packaging.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">04</span><div><h5>Made application health and resource use easier to monitor</h5><p>Implemented Prometheus monitoring and built Grafana dashboards for application health, resource utilization, and operational metrics.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">05</span><div><h5>Evaluated distributed tracing for application workflows</h5><p>Conducted an OpenTelemetry proof of concept to assess distributed tracing and observability across application workflows.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">06</span><div><h5>Supported availability of containerized workloads</h5><p>Monitored deployments and pod health on Red Hat OpenShift, helping troubleshoot workloads and maintain application availability.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">07</span><div><h5>Investigated performance and operational issues</h5><p>Used Dynatrace to monitor application performance, analyze system metrics, and help identify bottlenecks and operational issues.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">08</span><div><h5>Validated Android behavior on physical devices</h5><p>Debugged Android applications and validated unit tests using ADB Shell, troubleshooting runtime issues on physical devices.</p></div></li>
+                </ol>
+            </section>
+        </article>
 
-        <!-- Internship -->
-        <div class="timeline-item">
+        <article class="timeline-item">
             <div class="timeline-header">
                 <div class="role-company">
-                    <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs Logo" class="company-logo" loading="lazy" decoding="async">
+                    <span class="company-logo-frame company-logo-frame--dark">
+                        <img src="images/fortytwolabs_Ft-42.jpeg" alt="FortytwoLabs logo" class="company-logo" loading="lazy" decoding="async">
+                    </span>
                     <div class="role-text">
                         <h3 class="role-title">Intern</h3>
                         <span class="company-name">FortytwoLabs</span>
@@ -711,18 +845,41 @@
                 </div>
                 <div class="timeline-meta">
                     <span class="date">January 2023 — May 2023 (5 months)</span>
-                    <a href="/images/Internship-ExpLetter.pdf" download class="download-btn" title="Download Internship Letter">
-                        <i class="fas fa-download"></i>
+                    <a href="/images/Internship-ExpLetter.pdf" download class="download-btn" aria-label="Download internship experience letter" title="Download Internship Letter">
+                        <i class="fas fa-download" aria-hidden="true"></i><span>Letter</span>
                     </a>
                 </div>
             </div>
-            <ul>
-                <li>Built hands-on expertise in Linux/CentOS administration, including SSH/PuTTY, Bash scripting, filesystem/permissions management, troubleshooting, and server configuration. </li>
-                <li>Worked with Git/GitLab, REST APIs, Postman, Docker, and Linux-based application deployment; configured Apache HTTPD and Nginx reverse proxy setups.</li>
-                <li>Configured MongoDB on CentOS, performed CRUD operations and authentication, and implemented a 3-node replica set with primary/secondary configuration and replication monitoring.</li>
-                <li>Developed and tested C++ components using Google Test and implemented RSA, Shamir Secret Sharing, SHA-256/OpenSSL, and C++-to-WebAssembly (Emscripten) workflows.</li>
-            </ul>
-        </div>
+            <section class="experience-toolkit" aria-label="Tools and expertise used in this role">
+                <h4 class="impact-label">Core tools &amp; expertise</h4>
+                <ul class="experience-specialties">
+                    <li>CentOS</li>
+                    <li>Linux</li>
+                    <li>Bash</li>
+                    <li>Git/GitLab</li>
+                    <li>Docker</li>
+                    <li>Apache HTTPD</li>
+                    <li>Nginx</li>
+                    <li>REST APIs</li>
+                    <li>MongoDB</li>
+                    <li>C++</li>
+                    <li>Google Test</li>
+                    <li>OpenSSL</li>
+                    <li>WebAssembly</li>
+                    <li>Emscripten</li>
+                    <li>RSA &amp; Shamir Secret Sharing</li>
+                </ul>
+            </section>
+            <section class="contributions" aria-label="Contributions and outcomes">
+                <div class="contributions-heading"><h4 class="impact-label">Contributions &amp; outcomes</h4><span class="contributions-count">4 contributions</span></div>
+                <ol class="contribution-list">
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">01</span><div><h5>Supported reliable Linux server operations</h5><p>Worked across CentOS administration, server configuration, SSH access, Bash scripting, filesystem permissions, and troubleshooting.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">02</span><div><h5>Configured application delivery and reverse proxies</h5><p>Worked with Git/GitLab, REST APIs, Postman, and Docker for Linux application deployment; configured Apache HTTPD and Nginx reverse-proxy setups.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">03</span><div><h5>Configured replicated MongoDB storage</h5><p>Set up MongoDB on CentOS, performed CRUD operations and authentication, and implemented a monitored 3-node replica set with primary/secondary configuration.</p></div></li>
+                    <li class="contribution-entry"><span class="contribution-index" aria-hidden="true">04</span><div><h5>Built and tested security-focused C++ components</h5><p>Developed and tested C++ components with Google Test; implemented RSA, Shamir Secret Sharing, and SHA-256/OpenSSL workflows; and worked with C++-to-WebAssembly using Emscripten.</p></div></li>
+                </ol>
+            </section>
+        </article>
     </div>
 </section>
 
