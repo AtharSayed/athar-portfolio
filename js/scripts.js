@@ -598,6 +598,80 @@ function initStatCounters() {
                 return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
             }
 
+            // Safe, minimal markdown renderer for assistant replies.
+            // Escapes all HTML first, then supports **bold**, "- " lists, [text](https|mailto) links and bare emails.
+            function renderMarkdown(str) {
+                const esc = String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const inline = (t) => t
+                    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
+                        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+                    .replace(/(^|[\s(])([\w.+-]+@[\w-]+\.[\w.-]+)/g, '$1<a href="mailto:$2">$2</a>')
+                    .replace(/(^|[\s(])(https:\/\/[^\s<)]*[^\s<).,;:])/g,
+                        '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>');
+                const out = [];
+                let list = null;
+                const flush = () => {
+                    if (!list) return;
+                    out.push('<ul>' + list.map(i => '<li>' + inline(i) + '</li>').join('') + '</ul>');
+                    list = null;
+                };
+                for (const raw of esc.split('\n')) {
+                    const line = raw.trim();
+                    const m = line.match(/^[-*\u2022]\s+(.*)$/);
+                    if (m) { (list = list || []).push(m[1]); continue; }
+                    flush();
+                    if (line) out.push('<p>' + inline(line) + '</p>');
+                }
+                flush();
+                return out.join('');
+            }
+
+            // Reveal formatted (HTML) text character by character without breaking markup.
+            function revealRichText(bubble, text, cps = 220) {
+                const html = renderMarkdown(text);
+                const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                bubble.innerHTML = html;
+                if (reduce || String(text).length <= 48) {
+                    bubble.classList.remove('typing');
+                    return Promise.resolve();
+                }
+                const walker = document.createTreeWalker(bubble, NodeFilter.SHOW_TEXT);
+                const nodes = [];
+                for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push({ node: n, full: n.nodeValue });
+                nodes.forEach(o => { o.node.nodeValue = ''; });
+                const total = nodes.reduce((a, o) => a + o.full.length, 0);
+                let shown = 0, last = performance.now(), rafId = 0, done = false;
+
+                return new Promise((resolve) => {
+                    const finish = () => {
+                        if (done) return;
+                        done = true;
+                        cancelAnimationFrame(rafId);
+                        nodes.forEach(o => { o.node.nodeValue = o.full; });
+                        bubble.classList.remove('typing');
+                        delete bubble._typingController;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        resolve();
+                    };
+                    bubble._typingController = { kind: 'char', cancel: finish };
+                    bubble.classList.add('typing');
+                    const step = (now) => {
+                        if (done) return;
+                        shown = Math.min(total, shown + Math.max(1, Math.floor((now - last) * cps / 1000)));
+                        last = now;
+                        let rem = shown;
+                        for (const o of nodes) {
+                            o.node.nodeValue = o.full.slice(0, Math.max(0, Math.min(o.full.length, rem)));
+                            rem -= o.full.length;
+                        }
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        if (shown >= total) finish(); else rafId = requestAnimationFrame(step);
+                    };
+                    rafId = requestAnimationFrame(step);
+                });
+            }
+
             // Typing animation helpers (UI layer only)
             // - Non-blocking, per-bubble controllers using requestAnimationFrame
             // - Skips are supported via bubble._typingController or by calling skipAllTyping()
@@ -825,12 +899,11 @@ function initStatCounters() {
             return null;
             }
 
-            async function askMistral(userMessage) {
+            async function askPortfolioAssistant(userMessage) {
             convo.history.push({ role: 'user', content: userMessage });
 
             const payload = {
                 prompt: userMessage,
-                context: gatherProfileContext(),
                 history: convo.history
             };
 
@@ -861,10 +934,10 @@ function initStatCounters() {
                 // Store full text (immutable) and reveal via UI-layer typing animation
                 bubble.dataset.fullText = reply;
                 // Start the char-based non-blocking reveal (fast feel). It auto-disables for short replies.
-                startTypingAnimation(bubble, reply, { charsPerSecond: 160, minLengthForAnimation: 48 }).catch(() => {
+                revealRichText(bubble, reply, 220).catch(() => {
                     // Fallback to full render on any error
                     bubble.classList.remove('typing');
-                    bubble.innerHTML = sanitize(reply);
+                    bubble.innerHTML = renderMarkdown(reply);
                 });
             } catch (e) {
                 bubble.classList.remove('typing');
@@ -928,7 +1001,7 @@ function initStatCounters() {
                         return;
                     }
 
-                    askMistral(input);
+                    askPortfolioAssistant(input);
                 }
             });
 
@@ -952,7 +1025,7 @@ function initStatCounters() {
                         return;
                     }
 
-                    askMistral(input);
+                    askPortfolioAssistant(input);
                 });
             }
 

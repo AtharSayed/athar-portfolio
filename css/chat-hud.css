@@ -169,3 +169,18 @@
   .toggle-badge,
   .bubble.typing::after { animation: none !important; }
 }
+
+/* Rendered markdown inside assistant bubbles */
+.message.assistant .bubble p { margin: 0 0 0.55rem; line-height: 1.5; }
+.message.assistant .bubble p:last-child,
+.message.assistant .bubble ul:last-child { margin-bottom: 0; }
+.message.assistant .bubble ul { margin: 0 0 0.55rem; padding-left: 1.1rem; list-style: none; }
+.message.assistant .bubble li { position: relative; margin: 0 0 0.35rem; line-height: 1.45; }
+.message.assistant .bubble li::before {
+  position: absolute;
+  left: -0.95rem;
+  content: '\25B8';
+  color: var(--hud-cyan);
+}
+.message.assistant .bubble strong { color: var(--hud-gold); font-weight: 600; }
+.message.assistant .bubble a { color: var(--hud-cyan); text-decoration: underline; text-underline-offset: 2px; }

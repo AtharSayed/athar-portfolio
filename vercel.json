@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/chat.js": {
+      "includeFiles": "index.html"
+    }
+  },
+  "redirects": [
+    { "source": "/server/:path*", "destination": "/", "permanent": false }
+  ]
+}
