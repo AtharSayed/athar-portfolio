@@ -943,30 +943,40 @@
         </div>
     </section>
 
-    <button id="terminal-toggle" class="terminal-toggle" aria-label="Launch AI Chat">
+    <button id="terminal-toggle" class="terminal-toggle" aria-label="Open portfolio chat" aria-controls="ai-terminal" aria-expanded="false">
         <i class="fas fa-comments"></i>
         <span class="toggle-badge">AI</span>
     </button>
-    <div class="ai-terminal" id="ai-terminal" role="region" aria-label="AI Chat Interface">
+    <div class="ai-terminal" id="ai-terminal" role="region" aria-label="IRIS portfolio assistant" aria-hidden="true">
         <div class="terminal-header chat-header">
             <div class="terminal-title-section">
                 <span class="terminal-title">IRIS</span>
-                <span class="terminal-subtitle">Intelligent Responsive Interface System</span>
+                <span class="terminal-subtitle">Portfolio assistant</span>
             </div>
             <div class="terminal-powered-by">
                 <span class="llama-badge">
                     <i class="fas fa-brain"></i>
-                    Groq · GPT-OSS 20B
+                    GPT-OSS 20B
                 </span>
             </div>
+            <button class="chat-close" type="button" aria-label="Close portfolio chat">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
         </div>
-        <div class="chat-body" id="chat-body" aria-live="polite" aria-atomic="false">
+        <div class="chat-body" id="chat-body" aria-live="polite" aria-atomic="false" aria-relevant="additions text">
+            <div class="chat-suggestions" aria-label="Suggested questions">
+                <p class="chat-suggestions-label">Explore the portfolio</p>
+                <button class="chat-suggestion" type="button" data-chat-prompt="What projects has Athar worked on?">What projects has Athar worked on?</button>
+                <button class="chat-suggestion" type="button" data-chat-prompt="What are Athar’s main technical skills?">What are Athar’s main technical skills?</button>
+                <button class="chat-suggestion" type="button" data-chat-prompt="Tell me about Athar’s work experience.">Tell me about Athar’s work experience.</button>
+            </div>
             <ul class="messages" id="chat-messages" role="log"></ul>
         </div>
-        <div class="chat-input" role="form" aria-label="Chat input area">
-            <input type="text" id="terminal-input" placeholder="Ask about my work, experience, or projects..." disabled aria-label="Chat input">
-            <button id="chat-send" class="btn" aria-label="Send message" disabled>Send</button>
+        <div class="chat-input" role="form" aria-label="Message the portfolio assistant">
+            <input type="text" id="terminal-input" placeholder="Ask about Athar’s work, skills, or projects…" disabled aria-label="Ask a question about Athar’s portfolio" autocomplete="off">
+            <button id="chat-send" class="btn" aria-label="Send message" disabled><span class="send-label">Send</span><i class="fas fa-arrow-up" aria-hidden="true"></i></button>
         </div>
+        <p class="chat-disclaimer">Answers are based on information published in this portfolio.</p>
     </div>
 
     </main>

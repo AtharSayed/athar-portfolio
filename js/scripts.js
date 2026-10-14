@@ -401,8 +401,12 @@ function initStatCounters() {
             const chatBody = document.getElementById('chat-body');
             const chatMessages = document.getElementById('chat-messages');
             const terminalInput = document.getElementById('terminal-input');
+            const scrollChatToLatest = () => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            };
             const sendBtn = document.getElementById('chat-send');
-            const closeBtn = terminal?.querySelector('.close');
+            const closeBtn = terminal?.querySelector('.chat-close');
+            const suggestions = terminal?.querySelector('.chat-suggestions');
             if (!terminalToggle || !terminal || !chatBody || !chatMessages || !terminalInput) return;
 
             // Conversation state and pending request controller
@@ -485,12 +489,12 @@ function initStatCounters() {
                 li.appendChild(avatar);
                 li.appendChild(bubble);
                 chatMessages.appendChild(li);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                scrollChatToLatest();
                 return li;
             }
 
             // Default boot message (typed token-by-token for nicer UI)
-            const bootMessage = `I’m IRIS, your portfolio guide. I can help you explore Athar Sayed’s background, projects, experience, and technical focus in a more conversational way.`;
+            const bootMessage = `Hi, I’m IRIS. Ask me about Athar’s projects, experience, skills, or education.`;
 
             // Helper to append an empty bubble for typing
             function appendTypingMessage(role) {
@@ -509,7 +513,7 @@ function initStatCounters() {
                 li.appendChild(avatar);
                 li.appendChild(bubble);
                 chatMessages.appendChild(li);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                scrollChatToLatest();
                 return bubble;
             }
 
@@ -535,7 +539,7 @@ function initStatCounters() {
                         clearAll();
                         bubble.classList.remove('typing');
                         bubble.innerHTML = sanitize(text);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        scrollChatToLatest();
                         delete bubble._typingController;
                         if (resolveRef) resolveRef();
                     }
@@ -558,7 +562,7 @@ function initStatCounters() {
                             done = true;
                             bubble.classList.remove('typing');
                             bubble.innerHTML = sanitize(text);
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            scrollChatToLatest();
                             delete bubble._typingController;
                             resolveRef();
                             return;
@@ -566,7 +570,7 @@ function initStatCounters() {
 
                         const prefix = tokens.slice(0, i + 1).join(' ');
                         bubble.innerHTML = sanitize(prefix);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        scrollChatToLatest();
 
                         const currentToken = tokens[i] || '';
                         const extra = /[.!?]$/.test(currentToken) ? punctuationPause : 0;
@@ -618,6 +622,13 @@ function initStatCounters() {
                 };
                 for (const raw of esc.split('\n')) {
                     const line = raw.trim();
+                    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+                    if (heading) {
+                        flush();
+                        const level = heading[1].length;
+                        out.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+                        continue;
+                    }
                     const m = line.match(/^[-*\u2022]\s+(.*)$/);
                     if (m) { (list = list || []).push(m[1]); continue; }
                     flush();
@@ -651,7 +662,7 @@ function initStatCounters() {
                         nodes.forEach(o => { o.node.nodeValue = o.full; });
                         bubble.classList.remove('typing');
                         delete bubble._typingController;
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        scrollChatToLatest();
                         resolve();
                     };
                     bubble._typingController = { kind: 'char', cancel: finish };
@@ -665,7 +676,7 @@ function initStatCounters() {
                             o.node.nodeValue = o.full.slice(0, Math.max(0, Math.min(o.full.length, rem)));
                             rem -= o.full.length;
                         }
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        scrollChatToLatest();
                         if (shown >= total) finish(); else rafId = requestAnimationFrame(step);
                     };
                     rafId = requestAnimationFrame(step);
@@ -726,10 +737,7 @@ function initStatCounters() {
                         idx = nextIdx;
                         bubble.classList.add('typing');
                         // scroll container safely without exotic operators
-                        try {
-                            const container = (bubble.ownerDocument ? bubble.ownerDocument.getElementById('chat-messages') : null) || bubble.parentNode;
-                            if (container) container.scrollTop = container.scrollHeight;
-                        } catch (e) { /* ignore */ }
+                        scrollChatToLatest();
                         lastTime = now;
                         rafId = requestAnimationFrame(step);
                     } else {
@@ -969,6 +977,7 @@ function initStatCounters() {
                 },
                 clear: () => {
                     chatMessages.innerHTML = '';
+                    if (suggestions) suggestions.hidden = false;
                     // Replay the typed intro (do not return a string — displayBootMessage handles UI)
                     displayBootMessage();
                     return null;
@@ -982,57 +991,55 @@ function initStatCounters() {
                 }
             };
 
+            function sendMessage(message) {
+                if (terminalInput.disabled) return;
+                const input = String(message || '').trim();
+                if (!input) return;
+
+                skipAllTyping();
+                terminalInput.value = '';
+                if (suggestions) suggestions.hidden = true;
+                appendMessage('user', sanitize(input));
+
+                const key = input.toLowerCase();
+                if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
+                    const out = localCommands[key]();
+                    if (out !== undefined && out !== null && out !== '') {
+                        appendMessage('system', out);
+                    }
+                    return;
+                }
+
+                askPortfolioAssistant(input);
+            }
+
             terminalInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !terminalInput.disabled) {
                     e.preventDefault();
-                    // New user input should immediately reveal any typing messages
-                    skipAllTyping();
-                    const input = terminalInput.value.trim();
-                    if (!input) return;
-                    terminalInput.value = '';
-                    appendMessage('user', sanitize(input));
-
-                    const key = input.toLowerCase();
-                    if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
-                        const out = localCommands[key]();
-                        if (out !== undefined && out !== null && out !== '') {
-                            appendMessage('system', out);
-                        }
-                        return;
-                    }
-
-                    askPortfolioAssistant(input);
+                    sendMessage(terminalInput.value);
                 }
             });
 
             if (sendBtn) {
                 sendBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    if (terminalInput.disabled) return;
-                    // Reveal any in-flight typing before sending new message
-                    skipAllTyping();
-                    const input = terminalInput.value.trim();
-                    if (!input) return;
-                    terminalInput.value = '';
-                    appendMessage('user', sanitize(input));
-
-                    const key = input.toLowerCase();
-                    if (Object.prototype.hasOwnProperty.call(localCommands, key)) {
-                        const out = localCommands[key]();
-                        if (out !== undefined && out !== null && out !== '') {
-                            appendMessage('system', out);
-                        }
-                        return;
-                    }
-
-                    askPortfolioAssistant(input);
+                    sendMessage(terminalInput.value);
                 });
             }
 
+            suggestions?.addEventListener('click', (e) => {
+                const button = e.target.closest('[data-chat-prompt]');
+                if (!button) return;
+                sendMessage(button.dataset.chatPrompt);
+            });
+
             function toggleTerminal() {
-                terminal.classList.toggle('active');
-                console.log('Toggle AI chat:', terminal.classList.contains('active'));
-                if (terminal.classList.contains('active')) {
+                const isOpen = terminal.classList.toggle('active');
+                terminal.setAttribute('aria-hidden', String(!isOpen));
+                terminalToggle.setAttribute('aria-expanded', String(isOpen));
+                terminalToggle.setAttribute('aria-label', isOpen ? 'Close portfolio chat' : 'Open portfolio chat');
+
+                if (isOpen) {
                     if (!convo.booted) {
                         displayBootMessage();
                     } else {
@@ -1040,11 +1047,18 @@ function initStatCounters() {
                     }
                 } else {
                     terminalInput.blur();
+                    terminalToggle.focus();
                 }
             }
 
             terminalToggle.addEventListener('click', toggleTerminal);
             if (closeBtn) closeBtn.addEventListener('click', toggleTerminal);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && terminal.classList.contains('active')) {
+                    e.preventDefault();
+                    toggleTerminal();
+                }
+            });
 
             // Clicking a bubble instantly reveals its full text (delegated)
             chatMessages.addEventListener('click', (e) => {
