@@ -110,19 +110,29 @@
   padding-left: 3.25rem;
 }
 
-.terminal-title-section::before {
+.iris-mark {
   position: absolute;
   top: 50%;
   left: 0;
   width: 2.55rem;
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   border: 1px solid rgba(96, 165, 250, 0.42);
   border-radius: 17px;
-  background: #151d28;
-  box-shadow: 0 0 18px rgba(96, 165, 250, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  content: '';
+  background: radial-gradient(circle at 50% 42%, rgba(96, 165, 250, 0.17), rgba(21, 29, 40, 0.96) 72%);
+  box-shadow: 0 0 18px rgba(96, 165, 250, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transform: translateY(-50%);
 }
+
+.iris-mark svg { width: 76%; height: 76%; overflow: visible; }
+.iris-mark__orbit,
+.iris-mark__core-ring { fill: none; stroke: #60a5fa; }
+.iris-mark__orbit { stroke-width: 1.15; opacity: 0.64; }
+.iris-mark__core-ring { stroke-width: 1; opacity: 0.8; }
+.iris-mark__circuit { fill: none; stroke: #93c5fd; stroke-linecap: round; stroke-width: 1.35; opacity: 0.9; }
+.iris-mark__core { fill: rgba(96, 165, 250, 0.2); stroke: #7dd3fc; stroke-linejoin: round; stroke-width: 1.25; }
+.iris-mark__spark { fill: #dbeafe; filter: drop-shadow(0 0 3px #60a5fa); }
 
 .terminal-title {
   color: var(--chat-text);
@@ -499,7 +509,7 @@
 
   .terminal-header { gap: 0.55rem; padding: 0.95rem 0.9rem; }
   .terminal-title-section { padding-left: 2.7rem; }
-  .terminal-title-section::before { width: 2.15rem; border-radius: 14px; }
+  .iris-mark { width: 2.15rem; border-radius: 14px; }
   .terminal-title { font-size: 1.12rem; }
   .terminal-subtitle { font-size: 0.62rem; }
   .llama-badge { gap: 0.32rem; padding: 0.38rem 0.48rem; font-size: 0.55rem; }
