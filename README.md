@@ -1,310 +1,231 @@
 <div align="center">
 
-# Athar Sayed
+# Athar Sayed — Portfolio
 
-### AI/ML · Generative AI · Agentic AI
+**AI/ML · Generative AI · Agentic AI**
 
-A personal portfolio showcasing my professional experience, selected projects, technical skills, publications, achievements, and certifications — with **IRIS**, an AI portfolio assistant powered by Groq.
+A responsive, HUD-inspired developer portfolio with **IRIS**, an AI assistant that answers questions about my work, powered by Groq.
 
-<p>
-  <a href="https://athar-sayed-portfolio.vercel.app/">View Portfolio</a>
-</p>
+[**Live Site**](https://athar-sayed-portfolio.vercel.app/) · [**Resume**](./Athar-Sayed-Resume.pdf)
 
-<p>
-  <img src="https://img.shields.io/badge/HTML5-Markup-E34F26?style=flat-square&logo=html5&logoColor=white" alt="HTML5" />
-  <img src="https://img.shields.io/badge/CSS3-Styling-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
-  <img src="https://img.shields.io/badge/JavaScript-Frontend-F7DF1E?style=flat-square&logo=javascript&logoColor=111111" alt="JavaScript" />
-  <img src="https://img.shields.io/badge/Node.js-Backend-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/Express-API-444444?style=flat-square&logo=express&logoColor=white" alt="Express" />
-  <img src="https://img.shields.io/badge/Groq-LLM_Inference-F55036?style=flat-square" alt="Groq" />
-  <img src="https://img.shields.io/badge/Vercel-Deployment-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel" />
-</p>
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=111111)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-444444?style=flat-square&logo=express&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-F55036?style=flat-square)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
 </div>
 
----
+<!-- Add a screenshot or GIF of the site and the IRIS chat panel here, e.g.:
+![Portfolio preview](./images/preview.png)
+-->
 
-## Overview
+## Table of Contents
 
-This repository contains the source for my portfolio website. It combines a responsive, HUD-inspired interface with sections covering my background and work. The site also includes **IRIS**, a portfolio-focused chatbot that answers questions using information available in the portfolio.
-
-IRIS uses Groq's OpenAI-compatible Chat Completions API with the `openai/gpt-oss-20b` model. Chat requests are handled server-side so the Groq API key is not exposed to the browser.
-
-## At a glance
-
-| Area | Details |
-| --- | --- |
-| **Portfolio** | Home, About, Projects, Achievements, Skills, Experience, Publications, Certifications, and Blog |
-| **Interface** | Responsive layout, HUD-inspired visuals, mobile navigation, and floating chat panel |
-| **AI assistant** | IRIS answers portfolio-related questions about skills, projects, experience, education, and achievements |
-| **Response grounding** | Answers are based on portfolio content; unsupported personal details are not invented and unrelated questions are declined |
-| **Chat backend** | Node.js and Express locally; Vercel serverless function when deployed |
-| **Model provider** | Groq — `openai/gpt-oss-20b` |
-
-## Contents
-
-- [Technology stack](#technology-stack)
-- [Project structure](#project-structure)
-- [How IRIS works](#how-iris-works)
-- [Run locally](#run-locally)
-- [Configuration](#configuration)
-- [Chat API](#chat-api)
-- [Test the chatbot](#test-the-chatbot)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
+- [Testing](#testing)
 - [Deployment](#deployment)
-- [Security and privacy](#security-and-privacy)
+- [Security](#security)
+- [Project Structure](#project-structure)
 - [Troubleshooting](#troubleshooting)
 
-## Technology stack
+## Features
+
+- **Complete portfolio** — Home, About, Projects, Experience, Skills, Publications, Certifications, Achievements, and Blog sections.
+- **HUD-inspired interface** — responsive layout, boot-screen intro, section-navigation effects, and mobile navigation.
+- **IRIS AI assistant** — a floating chat panel that answers questions about my skills, projects, experience, education, and achievements.
+- **Grounded responses** — IRIS answers only from the portfolio content, does not invent personal details, and declines unrelated questions.
+- **Server-side inference** — the Groq API key never reaches the browser.
+- **One codebase, two runtimes** — the same chat service runs on a local Express server and as a Vercel serverless function.
+
+## Architecture
+
+IRIS loads the portfolio's public content from `index.html` on the server and passes it, with the user's question and conversation history, to Groq's `openai/gpt-oss-20b` model through the OpenAI-compatible Chat Completions API.
+
+```mermaid
+flowchart LR
+    A[Browser chat UI<br/>js/scripts.js] -->|POST /api/chat| B{Runtime}
+    B -->|Local| C[server/index.js<br/>Express]
+    B -->|Vercel| D[api/chat.js<br/>Serverless function]
+    C --> E[server/chat-service.js]
+    D --> E
+    E --> F[server/chat-config.js<br/>prompt, validation, context]
+    F --> G[(index.html<br/>portfolio content)]
+    E --> H[Groq API<br/>gpt-oss-20b]
+```
+
+**Design notes**
+
+- Grounding uses prompt-level context injection from the portfolio page, not vector retrieval. This keeps the system simple and is sufficient for the size of the content.
+- Server-loaded content is the source of truth; browser-supplied context is ignored.
+- `chat-service.js` handles timeouts, retries, and inference errors. `chat-config.js` handles system instructions, input and history validation, and response formatting.
+
+## Tech Stack
 
 | Layer | Technologies |
 | --- | --- |
-| **Frontend** | HTML, CSS, vanilla JavaScript |
-| **Local backend** | Node.js, Express, native `fetch` API |
-| **LLM inference** | Groq OpenAI-compatible Chat Completions API |
-| **Hosted chat API** | Vercel serverless function |
-| **Testing** | PowerShell smoke-test script |
+| Frontend | HTML, CSS, vanilla JavaScript |
+| Backend | Node.js, Express |
+| LLM inference | Groq (`openai/gpt-oss-20b`) via OpenAI-compatible Chat Completions |
+| Hosting | Vercel (static site + serverless function) |
+| Testing | PowerShell smoke-test script |
 
-## Project structure
-
-```text
-.
-├── .gitignore
-├── README.md
-├── Athar-Sayed-Resume.pdf
-├── index.html
-├── test-chatbot.ps1
-├── vercel.json
-├── api/
-│   └── chat.js
-├── css/
-│   ├── styles.css
-│   ├── hud.css
-│   └── chat-hud.css
-├── images/
-├── js/
-│   ├── scripts.js
-│   └── hud-effects.js
-├── server/
-│   ├── .env                    # Create locally; contains secrets and is ignored by Git
-│   ├── chat-config.js
-│   ├── chat-service.js
-│   ├── index.js
-│   ├── package.json
-│   └── package-lock.json
-└── package-lock.json           # Root-level lockfile; backend dependencies live in server/
-```
-
-### Key files
-
-| Path | Responsibility |
-| --- | --- |
-| `index.html` | Main portfolio page, chatbot markup, and public profile content used to ground answers. |
-| `css/styles.css` | Shared layout, typography, colors, responsive rules, and general site styling. |
-| `css/hud.css` | HUD-inspired page interface and related visual elements. |
-| `css/chat-hud.css` | Chat window, message bubbles, input, and chatbot-specific styling. |
-| `js/scripts.js` | Browser interactions, navigation, and chatbot UI. Sends prompts and conversation history to `/api/chat`; contains no Groq API key. |
-| `js/hud-effects.js` | Intro/boot screen, section-navigation effects, and HUD/theme interactions. |
-| `images/` | Profile and project images, employer logos, certificates, and supporting media. |
-| `Athar-Sayed-Resume.pdf` | Downloadable resume linked from the portfolio. |
-| `api/chat.js` | Vercel serverless entry point for `POST /api/chat`; forwards requests to the shared chat service. |
-| `server/index.js` | Local Express application that serves the portfolio, exposes local API routes, and starts the Node.js server. |
-| `server/chat-service.js` | Shared request orchestration, model calls, timeouts, retries, inference-error handling, and response cleanup. |
-| `server/chat-config.js` | Model defaults, system instructions, portfolio-context extraction, prompt/history validation, intent guidance, and response formatting. |
-| `server/package.json` | Backend package metadata, dependencies, and `start`/`dev` scripts. |
-| `server/package-lock.json` | Locked versions of backend dependencies. Use with the manifest in `server/`. |
-| `server/.env` | Local environment variables, including the Groq API key. Create locally and never commit it. |
-| `vercel.json` | Vercel routing and function configuration, including bundling `index.html` for chatbot context loading. |
-| `test-chatbot.ps1` | Manual smoke-test prompts for portfolio questions, follow-ups, missing facts, out-of-scope requests, and prompt-injection attempts. |
-| `.gitignore` | Excludes local secrets, dependency directories, generated output, and log files from Git. |
-
-## How IRIS works
-
-The local Express route and Vercel function use the same shared chat service, keeping request handling consistent across environments.
-
-```text
-Browser chat UI
-    │
-    └── POST /api/chat
-         ├── Local: server/index.js
-         └── Vercel: api/chat.js
-                  │
-                  └── server/chat-service.js
-                           ├── server/chat-config.js
-                           ├── Portfolio context from index.html
-                           └── Groq Chat Completions API
-```
-
-The backend loads portfolio context from `index.html`. Client-supplied context is not required as the source of truth.
-
-## Run locally
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js 18 or newer**
-- A **Groq API key** with access to the configured model
+- Node.js 18 or newer
+- A [Groq API key](https://console.groq.com/) with access to the configured model
 
-### 1. Install dependencies
+### Installation
 
-Run this command from the repository root:
-
-```powershell
+```bash
+git clone https://github.com/AtharSayed/athar-portfolio.git
+cd athar-portfolio
 npm --prefix server install
 ```
 
-### 2. Configure environment variables
+### Configuration
 
-Create a `server/.env` file and add your own Groq credentials:
+Create `server/.env`:
 
 ```dotenv
 GROQ_API_KEY=your-groq-api-key
-GROQ_MODEL_ID=openai/gpt-oss-20b
-PORT=5173
+GROQ_MODEL_ID=openai/gpt-oss-20b   # optional
+PORT=5173                          # optional
 ```
-
-Keep this file private. The local server loads `server/.env` through `dotenv`; never commit or share its contents.
-
-### 3. Start the application
-
-```powershell
-npm --prefix server start
-```
-
-Open the portfolio at **http://localhost:5173**.
-
-To check whether the local API server is running, open **http://localhost:5173/api/health**. A healthy server returns:
-
-```json
-{
-  "status": "ok"
-}
-```
-
-### Development mode
-
-For automatic server restarts during development:
-
-```powershell
-npm --prefix server run dev
-```
-
-## Configuration
-
-The backend reads the following environment variables:
 
 | Variable | Required | Default | Description |
 | --- | :---: | --- | --- |
-| `GROQ_API_KEY` | Yes | — | Server-side secret used to authenticate with Groq. |
-| `GROQ_MODEL_ID` | No | `openai/gpt-oss-20b` | Model ID used for chat inference. |
-| `PORT` | No | `5173` | Port used by the local Express server. |
+| `GROQ_API_KEY` | Yes | — | Server-side secret for authenticating with Groq |
+| `GROQ_MODEL_ID` | No | `openai/gpt-oss-20b` | Model used for chat inference |
+| `PORT` | No | `5173` | Port for the local Express server |
 
-Chat behavior and request handling are split across these files:
+### Run
 
-- **`server/chat-config.js`** — prompt instructions, portfolio context, intent handling, validation, and response formatting.
-- **`server/chat-service.js`** — Groq requests, timeouts, retries, and inference-error handling.
+```bash
+npm --prefix server start        # start the server
+npm --prefix server run dev      # or: auto-restart on changes
+```
 
-The local Express route and Vercel function both call the shared chat service.
+Open <http://localhost:5173>. A health check is available at <http://localhost:5173/api/health>.
 
-## Chat API
+## API Reference
 
 ### `POST /api/chat`
 
-Sends a user prompt and optional conversation history to IRIS.
+Sends a question and optional conversation history to IRIS.
 
-**Request body**
+**Request**
 
 ```json
 {
   "prompt": "What projects has Athar worked on?",
-  "history": []
+  "history": [
+    { "role": "user", "content": "Tell me about your AI projects." }
+  ]
 }
 ```
 
-`history` is optional. When supplied, it is an array of conversation turns in this format:
+`history` is optional. Each turn has a `role` of `user` or `assistant`.
+
+**Response**
 
 ```json
 {
-  "role": "user",
-  "content": "Tell me about your AI projects."
+  "reply": "A concise answer based on the portfolio content."
 }
 ```
 
-The `role` can be `user` or `assistant`. The backend loads portfolio context from `index.html`; there is no need to send portfolio context from the browser.
-
-**Successful response**
-
-```json
-{
-  "reply": "A concise answer based on the portfolio data."
-}
-```
-
-Malformed requests and missing API credentials result in error responses. Inference failures are handled by the shared chat service and returned as a user-facing retry message.
+Malformed requests and missing credentials return error responses. Inference failures return a user-facing retry message.
 
 ### `GET /api/health`
 
-Returns a small health response for checking the local Express server.
+Returns `{ "status": "ok" }` when the local server is running.
 
-## Test the chatbot
+## Testing
 
-Start the local server first, then run the PowerShell smoke-test script from the repository root:
+With the local server running, execute the smoke-test script from the repository root:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\test-chatbot.ps1
 ```
 
-The script displays replies for manual review. Its prompts cover:
+The script prints IRIS's replies for manual review across these categories:
 
-- Portfolio questions and follow-up questions
-- Details that are not present in the portfolio
+- Portfolio questions and follow-ups
+- Details not present in the portfolio
 - Unrelated or out-of-scope requests
 - Prompt-injection attempts
 
-This is a manual smoke test, not a replacement for deployment or provider integration tests. Tests require a valid Groq API key and may be affected by model availability, rate limits, or account quotas.
+> This is a manual smoke test, not an automated test suite. It requires a valid Groq API key and may be affected by rate limits or model availability.
 
 ## Deployment
 
 ### Vercel
 
-The repository includes `vercel.json` to bundle `index.html` with the chat function and redirect requests under `/server/` to the site root.
-
 1. Import the repository into Vercel.
-2. Add `GROQ_API_KEY` under the project's **Environment Variables** settings.
-3. Optionally set `GROQ_MODEL_ID` to override the default model.
-4. Deploy the project and test the website and `/api/chat` endpoint.
+2. Add `GROQ_API_KEY` under **Settings → Environment Variables** (optionally `GROQ_MODEL_ID`).
+3. Deploy, then verify the site and `POST /api/chat`.
 
-**Never add the API key to frontend JavaScript or commit it to the repository.**
+`vercel.json` bundles `index.html` with the chat function so IRIS can load its context, and redirects `/server/` requests to the site root.
 
-### Node.js host
+### Any Node.js host
 
-Deploy the repository to a Node.js host and configure `GROQ_API_KEY` through the host's environment settings. You can also set `GROQ_MODEL_ID` and `PORT` if needed.
+Set `GROQ_API_KEY` in the host's environment settings, then run:
 
-Install the backend dependencies and start the service with:
-
-```powershell
+```bash
 npm --prefix server install
 npm --prefix server start
 ```
 
-## Security and privacy
+## Security
 
-- Keep `GROQ_API_KEY` in server-side environment configuration only.
-- Do not commit `.env` files, API keys, or other credentials.
-- The backend uses portfolio content loaded from `index.html`; browser-supplied context is not treated as the source of truth.
-- IRIS is instructed to stay within portfolio topics, avoid unsupported personal claims, reject requests to disclose prompts, and not reveal hidden instructions or credentials.
+- The Groq API key is read only from server-side environment variables. Never commit `.env` files or expose keys in frontend code.
+- IRIS is instructed to stay within portfolio topics, avoid unsupported personal claims, refuse to reveal its instructions, and never disclose credentials.
+- Prompts and conversation history are validated on the server before reaching the model.
+
+## Project Structure
+
+```text
+.
+├── index.html            # Portfolio page, chat markup, and content used to ground IRIS
+├── api/
+│   └── chat.js           # Vercel serverless entry point for POST /api/chat
+├── server/
+│   ├── index.js          # Local Express server
+│   ├── chat-service.js  # Model calls, timeouts, retries, error handling
+│   ├── chat-config.js   # System prompt, context loading, validation, formatting
+│   └── package.json
+├── js/
+│   ├── scripts.js        # Navigation and chat UI
+│   └── hud-effects.js    # Boot screen and HUD effects
+├── css/                  # styles.css, hud.css, chat-hud.css
+├── images/               # Profile, project, and certificate assets
+├── test-chatbot.ps1      # Manual chatbot smoke tests
+├── vercel.json           # Vercel routing and function config
+└── Athar-Sayed-Resume.pdf
+```
 
 ## Troubleshooting
 
-| Issue | What to check |
+| Problem | Fix |
 | --- | --- |
-| `GROQ_API_KEY missing` | Ensure `server/.env` exists for local development or the key is configured on the deployment host. Restart the local server or redeploy after changing environment settings. |
-| Port already in use | Set `PORT` to an available local port, then open the site on that port. |
-| Inference errors or rate limits | Check server logs, Groq model availability, API-key permissions, and account quota. If rate-limited, wait before retrying. |
-| Site loads but chat does not respond | Check `/api/health` locally, the browser's Network panel, and deployment logs for the chat function. |
+| `GROQ_API_KEY missing` | Create `server/.env` locally, or set the variable on your host, then restart or redeploy. |
+| Port already in use | Set `PORT` to a free port. |
+| Inference errors or rate limits | Check server logs, API-key permissions, model availability, and account quota, then retry later. |
+| Site loads but chat is silent | Check `/api/health`, the browser Network tab, and the deployment function logs. |
 
 ---
 
 <div align="center">
 
-**Athar Sayed** · AI/ML & Generative AI Portfolio
+**Athar Sayed** · [Portfolio](https://athar-sayed-portfolio.vercel.app/) · [GitHub](https://github.com/AtharSayed)
 
 </div>
