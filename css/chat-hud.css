@@ -316,8 +316,8 @@
   border-radius: 17px 17px 17px 5px;
   background: var(--chat-panel-raised);
   color: var(--chat-text);
-  font-size: 0.87rem;
-  line-height: 1.7;
+  font-size: 0.875rem;
+  line-height: 1.5;
   overflow-wrap: anywhere;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
@@ -370,6 +370,18 @@
   content: '';
   transform: translate(-50%, -50%);
   animation: typing-dots 850ms steps(3, end) infinite;
+}
+
+.bubble.typing.thinking {
+  min-width: 0;
+  min-height: 0;
+  color: var(--chat-muted) !important;
+  font-style: italic;
+}
+.bubble.typing.thinking::after {
+  display: none;
+  content: none;
+  animation: none;
 }
 
 @keyframes typing-dots { to { background-position-x: 30px; } }
@@ -445,7 +457,7 @@
 .ai-terminal .message.assistant .bubble p {
   margin: 0 0 0.72rem;
   color: var(--chat-text);
-  line-height: 1.7;
+  line-height: 1.5;
 }
 .ai-terminal .message.assistant .bubble p + p { margin-top: 0.12rem; }
 .ai-terminal .message.assistant .bubble p:last-child,
@@ -458,7 +470,7 @@
 .ai-terminal .message.assistant .bubble h4 + ul,
 .ai-terminal .message.assistant .bubble h5 + ul,
 .ai-terminal .message.assistant .bubble h6 + ul { margin-top: 0.1rem; }
-.ai-terminal .message.assistant .bubble li { position: relative; margin: 0 0 0.42rem; color: var(--chat-text); line-height: 1.6; }
+.ai-terminal .message.assistant .bubble li { position: relative; margin: 0 0 0.42rem; color: var(--chat-text); line-height: 1.5; }
 .ai-terminal .message.assistant .bubble li:last-child { margin-bottom: 0; }
 .ai-terminal .message.assistant .bubble li::before {
   position: absolute;
@@ -477,9 +489,9 @@
   margin: 1rem 0 0.5rem;
   color: var(--chat-text);
   font-family: var(--hud-body);
-  font-size: 0.95rem;
+  font-size: inherit;
   font-weight: 650;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 .ai-terminal .message.assistant .bubble h1:first-child,
 .ai-terminal .message.assistant .bubble h2:first-child,
@@ -518,7 +530,7 @@
   .chat-suggestions { gap: 0.45rem; padding: 0.75rem; border-radius: 16px; }
   .chat-suggestion { min-height: 44px; font-size: 0.76rem; }
   .messages { gap: 0.8rem; }
-  .message .bubble { max-width: 88%; padding: 0.76rem 0.85rem; font-size: 0.84rem; }
+  .message .bubble { max-width: 88%; padding: 0.76rem 0.85rem; font-size: 0.875rem; }
   .chat-input { gap: 0.55rem; padding: 0.8rem 0.85rem 0.75rem; }
   #terminal-input { min-height: 46px; padding: 0.65rem 0.75rem; font-size: 16px; }
   #chat-send { min-width: 48px; min-height: 46px; padding: 0.6rem; }

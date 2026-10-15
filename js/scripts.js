@@ -916,9 +916,10 @@ function initStatCounters() {
             };
 
             // Add a temporary placeholder message while waiting for reply
-            const placeholder = appendMessage('assistant', 'Thinking...');
+            const placeholder = appendMessage('assistant', 'Thinking…');
             const bubble = placeholder.querySelector('.bubble');
-            bubble.classList.add('typing');
+            bubble.classList.add('typing', 'thinking');
+            bubble.setAttribute('role', 'status');
 
             try {
                 const res = await fetch(apiEndpoint('/api/chat'), {
@@ -930,6 +931,8 @@ function initStatCounters() {
                 if (!res.ok) {
                     const errText = await res.text();
                     bubble.classList.remove('typing');
+                    bubble.classList.remove('thinking');
+                    bubble.removeAttribute('role');
                     bubble.innerHTML = sanitize('Error: ' + errText);
                     return;
                 }
@@ -939,6 +942,8 @@ function initStatCounters() {
 
                 convo.history.push({ role: 'assistant', content: reply });
                 bubble.classList.remove('typing');
+                bubble.classList.remove('thinking');
+                bubble.removeAttribute('role');
                 // Store full text (immutable) and reveal via UI-layer typing animation
                 bubble.dataset.fullText = reply;
                 // Start the char-based non-blocking reveal (fast feel). It auto-disables for short replies.
@@ -949,6 +954,8 @@ function initStatCounters() {
                 });
             } catch (e) {
                 bubble.classList.remove('typing');
+                bubble.classList.remove('thinking');
+                bubble.removeAttribute('role');
                 bubble.innerHTML = sanitize('Network error: ' + String(e));
             }
             }
